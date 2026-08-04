@@ -36,14 +36,20 @@ export default function MemberDetail({ member, onClose }) {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold">{member.name}</h2>
-              {member.number != null && <span className="text-slate-400">#{member.number}</span>}
+              {member.number != null && <span className="text-slate-400">No.{member.number}</span>}
               <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>{member.tier}</span>
             </div>
             <p className="mt-0.5 text-sm text-slate-400">{meta}</p>
           </div>
         </div>
 
-        <p className="mt-3 text-sm text-slate-300">{member.intro}</p>
+        {member.intro && (
+          <div className="mt-4 rounded-xl bg-white/5 px-4 py-3 text-center">
+            <p className="text-base font-semibold italic" style={{ color: tier.accent }}>
+              “{member.intro}”
+            </p>
+          </div>
+        )}
 
         <div className="mt-4">
           <RadarChart stats={member.stats} color={tier.accent} />
