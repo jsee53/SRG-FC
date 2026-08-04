@@ -16,7 +16,7 @@
 // 범례: 왼쪽일수록 해당 멤버 안에서 더 높은 능력치. `,`=거의 비슷 · `-`=조금 차이 · `>`=많이 차이(더 넓게 벌림)
 //
 // [S] 고태현 패스,활동량,슛,수비,드리블-피지컬 / 김다훈 패스,드리블,슛,수비,활동량-피지컬 /
-//     최현규 수비,활동량,피지컬>슛,패스,드리블 / 한상혁 패스,드리블,활동량,슛,수비>피지컬 /
+//     최현규 수비,활동량,피지컬>슛,패스,드리블 / 한상혁 패스,활동량,드리블,수비,>슛,피지컬 /
 //     송정성 수비,활동량,피지컬>패스,슛,드리블 / 송지우 슛,드리블>활동량,패스,수비,피지컬
 // [A] 진시영 슛,피지컬,드리블,활동량,수비>패스 / 박주성 패스,수비,활동량>슛,드리블,피지컬 /
 //     김진호 슛,드리블,활동량-패스,피지컬,수비 / 안무힐 슛,드리블,패스>피지컬,수비,활동량 /
@@ -33,7 +33,7 @@ export const members = [
   { id: 1, name: '고태현', number: 7, birthYear: 1999, positions: ['MF', 'FW', 'DF'], tier: 'S', rank: 1, photo: '', intro: 'GOATㅐ현', stats: { passing: 98, dribbling: 94, physical: 90, defense: 95, stamina: 97, finishing: 96 } },
   { id: 2, name: '김다훈', number: 17, birthYear: 1999, positions: ['MF', 'FW', 'DF'], tier: 'S', rank: 2, photo: '', intro: '같은 팀하고 싶은 남자 1위', stats: { passing: 97, dribbling: 96, physical: 89, defense: 94, stamina: 93, finishing: 95 } },
   { id: 3, name: '최현규', number: 6, birthYear: 1998, positions: ['MF', 'DF'], tier: 'S', rank: 3, photo: '', intro: '뚫을 수 없는 남자', stats: { passing: 87, dribbling: 87, physical: 98, defense: 99, stamina: 99, finishing: 88 } },
-  { id: 4, name: '한상혁', number: 8, birthYear: 1998, positions: ['MF', 'FW', 'DF'], tier: 'S', rank: 4, photo: '', intro: '육각형 플레이어', stats: { passing: 96, dribbling: 95, physical: 82, defense: 92, stamina: 94, finishing: 93 } },
+  { id: 4, name: '한상혁', number: 8, birthYear: 1998, positions: ['MF', 'FW', 'DF'], tier: 'S', rank: 4, photo: '', intro: '육각형 플레이어', stats: { passing: 98, dribbling: 96, physical: 82, defense: 93, stamina: 97, finishing: 85 } },
   { id: 5, name: '송정성', number: 21, birthYear: 1998, positions: ['DF'], tier: 'S', rank: 5, photo: '', intro: '수비의 천재', stats: { passing: 86, dribbling: 84, physical: 96, defense: 98, stamina: 97, finishing: 85 } },
   { id: 6, name: '송지우', number: 11, birthYear: 2000, positions: ['FW', 'GK'], tier: 'S', rank: 6, photo: '', intro: '미친 골 결정능력 보유자', stats: { passing: 87, dribbling: 97, physical: 84, defense: 86, stamina: 88, finishing: 98 } },
 
@@ -55,7 +55,7 @@ export const members = [
 
   // C 티어
   { id: 19, name: '편현재', number: 4, birthYear: 1999, positions: ['MF'], tier: 'C', rank: 1, photo: '', intro: '그의 슛을 조심해', stats: { passing: 71, dribbling: 69, physical: 70, defense: 73, stamina: 74, finishing: 75 } },
-  { id: 20, name: '한민석', number: 5, birthYear: 1999, positions: ['DF'], tier: 'C', rank: 2, photo: '', intro: '개그맨', stats: { passing: 81, dribbling: 71, physical: 70, defense: 67, stamina: 68, finishing: 69 } },
+  { id: 20, name: '한민석', number: 5, birthYear: 1999, positions: ['DF', 'GK'], tier: 'C', rank: 2, photo: '', intro: '개그맨', stats: { passing: 81, dribbling: 71, physical: 70, defense: 67, stamina: 68, finishing: 69 } },
   { id: 21, name: '이민녕', number: null, birthYear: 1999, positions: ['MF'], tier: 'C', rank: 3, photo: '', intro: 'SRG-FC 유니콘', stats: { passing: 68, dribbling: 66, physical: 67, defense: 72, stamina: 73, finishing: 74 } },
   { id: 22, name: '박형진', number: null, birthYear: 1998, positions: ['MF'], tier: 'C', rank: 4, photo: '', intro: '성실한 플레이어', stats: { passing: 63, dribbling: 77, physical: 65, defense: 66, stamina: 76, finishing: 67 } },
   { id: 23, name: '김형석', number: 26, birthYear: 1999, positions: ['DF'], tier: 'C', rank: 5, photo: '', intro: '1게임은 잘함', stats: { passing: 78, dribbling: 75, physical: 63, defense: 66, stamina: 62, finishing: 64 } },
