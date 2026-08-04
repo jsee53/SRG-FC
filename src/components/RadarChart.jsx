@@ -32,7 +32,15 @@ export default function RadarChart({ stats, color = '#34d399' }) {
         const [x, y] = pointAt(i, RADIUS)
         return <line key={key} x1={CENTER} y1={CENTER} x2={x} y2={y} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
       })}
-      <polygon points={dataPoints} fill={color} fillOpacity="0.35" stroke={color} strokeWidth="2" />
+      <polygon
+        points={dataPoints}
+        fill={color}
+        fillOpacity="0.35"
+        stroke={color}
+        strokeWidth="2"
+        style={{ transformOrigin: `${CENTER}px ${CENTER}px` }}
+        className="[animation:radar-in_0.5s_ease-out]"
+      />
       {AXES.map((key, i) => {
         const [x, y] = pointAt(i, RADIUS + 24)
         return (

@@ -30,7 +30,7 @@ export default function MemberCard({ member, rank, active, onClick }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate font-semibold">{member.name}</span>
-            {member.number != null && <span className="text-sm text-slate-400">#{member.number}</span>}
+            {member.number != null && <span className="text-sm text-slate-400">No.{member.number}</span>}
             <span className={`ml-auto rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>
               {member.tier}
             </span>
