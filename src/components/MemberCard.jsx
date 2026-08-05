@@ -1,6 +1,8 @@
 import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
 import { TIER_STYLES, STAT_LABELS } from '../utils/tierStyles'
+import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
+import { aceMemberId } from '../utils/ace'
 import Avatar from './Avatar'
 
 export default function MemberCard({ member, rank, active, onClick }) {
@@ -15,7 +17,9 @@ export default function MemberCard({ member, rank, active, onClick }) {
       type="button"
       onClick={onClick}
       className={`relative overflow-hidden rounded-2xl bg-slate-800/60 p-4 text-left ring-1 transition-all hover:-translate-y-0.5 hover:brightness-110 ${
-        active ? 'ring-2 ring-white/70' : tier.ring
+        active
+          ? '-translate-y-1 ring-2 ring-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.25),0_8px_20px_-4px_rgba(52,211,153,0.5)]'
+          : tier.ring
       }`}
     >
       <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tier.glow} to-transparent`} />
@@ -28,6 +32,22 @@ export default function MemberCard({ member, rank, active, onClick }) {
         )}
         <Avatar name={member.name} photo={member.photo} size="md" />
         <div className="min-w-0 flex-1">
+          {(member.role || member.id === aceMemberId) && (
+            <div className="mb-0.5 flex gap-1">
+              {member.id === aceMemberId && (
+                <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider ${ACE_STYLE}`}>
+                  {ACE_LABEL}
+                </span>
+              )}
+              {member.role && (
+                <span
+                  className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider ${ROLE_STYLES[member.role]}`}
+                >
+                  {ROLE_LABELS[member.role]}
+                </span>
+              )}
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <span className="truncate font-semibold">{member.name}</span>
             {member.number != null && <span className="text-sm text-slate-400">No.{member.number}</span>}
