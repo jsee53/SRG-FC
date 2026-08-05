@@ -7,6 +7,24 @@ import { aceMemberId } from '../utils/ace'
 import Avatar from './Avatar'
 import RadarChart from './RadarChart'
 
+function NavArrow({ side, onClick, disabled, children }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
+      disabled={disabled}
+      className={`fixed top-1/2 z-[60] flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-2xl text-white shadow-lg backdrop-blur transition-all hover:bg-black/80 disabled:pointer-events-none disabled:opacity-0 ${
+        side === 'left' ? 'left-2' : 'right-2'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
 export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev, onNext }) {
   const touchStart = useRef(null)
   const [direction, setDirection] = useState('next')
@@ -51,21 +69,20 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 [animation:overlay-in_0.15s_ease-out]"
       onClick={onClose}
     >
+      <NavArrow side="left" onClick={goPrev} disabled={!hasPrev}>
+        ‹
+      </NavArrow>
+      <NavArrow side="right" onClick={goNext} disabled={!hasNext}>
+        ›
+      </NavArrow>
+
       <div
         className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 [animation:sheet-in_0.2s_ease-out]"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="flex items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={goPrev}
-            disabled={!hasPrev}
-            className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white disabled:opacity-30 disabled:hover:bg-white/10"
-          >
-            ‹ 이전
-          </button>
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={onClose}
@@ -73,17 +90,12 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
           >
             닫기
           </button>
-          <button
-            type="button"
-            onClick={goNext}
-            disabled={!hasNext}
-            className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white disabled:opacity-30 disabled:hover:bg-white/10"
-          >
-            다음 ›
-          </button>
         </div>
 
-        <div key={member.id} className={direction === 'next' ? '[animation:slide-next-in_0.25s_ease-out]' : '[animation:slide-prev-in_0.25s_ease-out]'}>
+        <div
+          key={member.id}
+          className={direction === 'next' ? '[animation:slide-next-in_0.55s_cubic-bezier(0.22,1,0.36,1)]' : '[animation:slide-prev-in_0.55s_cubic-bezier(0.22,1,0.36,1)]'}
+        >
           <div className="mt-2 flex items-center gap-4">
             <Avatar name={member.name} photo={member.photo} size="lg" />
             <div>
