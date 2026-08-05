@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
 import { TIER_STYLES } from '../utils/tierStyles'
@@ -9,6 +9,7 @@ import RadarChart from './RadarChart'
 
 export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev, onNext }) {
   const touchStart = useRef(null)
+  const [direction, setDirection] = useState('next')
 
   if (!member) return null
   const tier = TIER_STYLES[member.tier] ?? TIER_STYLES.D
@@ -16,6 +17,16 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
   const meta = [member.positions.join('/'), `${calcAge(member.birthYear)}세`, `OVR ${ovr}`]
     .filter(Boolean)
     .join(' · ')
+
+  function goPrev() {
+    setDirection('prev')
+    onPrev?.()
+  }
+
+  function goNext() {
+    setDirection('next')
+    onNext?.()
+  }
 
   function handleTouchStart(e) {
     const t = e.touches[0]
@@ -30,8 +41,8 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
     touchStart.current = null
 
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) onNext?.()
-      else onPrev?.()
+      if (dx < 0) goNext()
+      else goPrev()
     }
   }
 
@@ -49,7 +60,7 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
-            onClick={onPrev}
+            onClick={goPrev}
             disabled={!hasPrev}
             className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white disabled:opacity-30 disabled:hover:bg-white/10"
           >
@@ -64,7 +75,7 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
           </button>
           <button
             type="button"
-            onClick={onNext}
+            onClick={goNext}
             disabled={!hasNext}
             className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white disabled:opacity-30 disabled:hover:bg-white/10"
           >
@@ -72,44 +83,46 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
           </button>
         </div>
 
-        <div className="mt-2 flex items-center gap-4">
-          <Avatar name={member.name} photo={member.photo} size="lg" />
-          <div>
-            {(member.role || member.id === aceMemberId) && (
-              <div className="mb-1 flex gap-1">
-                {member.id === aceMemberId && (
-                  <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider ${ACE_STYLE}`}>
-                    {ACE_LABEL}
-                  </span>
-                )}
-                {member.role && (
-                  <span
-                    className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider ${ROLE_STYLES[member.role]}`}
-                  >
-                    {ROLE_LABELS[member.role]}
-                  </span>
-                )}
+        <div key={member.id} className={direction === 'next' ? '[animation:slide-next-in_0.25s_ease-out]' : '[animation:slide-prev-in_0.25s_ease-out]'}>
+          <div className="mt-2 flex items-center gap-4">
+            <Avatar name={member.name} photo={member.photo} size="lg" />
+            <div>
+              {(member.role || member.id === aceMemberId) && (
+                <div className="mb-1 flex gap-1">
+                  {member.id === aceMemberId && (
+                    <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider ${ACE_STYLE}`}>
+                      {ACE_LABEL}
+                    </span>
+                  )}
+                  {member.role && (
+                    <span
+                      className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider ${ROLE_STYLES[member.role]}`}
+                    >
+                      {ROLE_LABELS[member.role]}
+                    </span>
+                  )}
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold">{member.name}</h2>
+                {member.number != null && <span className="text-slate-400">No.{member.number}</span>}
+                <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>{member.tier}</span>
               </div>
-            )}
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold">{member.name}</h2>
-              {member.number != null && <span className="text-slate-400">No.{member.number}</span>}
-              <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>{member.tier}</span>
+              <p className="mt-0.5 text-sm text-slate-400">{meta}</p>
             </div>
-            <p className="mt-0.5 text-sm text-slate-400">{meta}</p>
           </div>
-        </div>
 
-        {member.intro && (
-          <div className="mt-4 rounded-xl bg-white/5 px-4 py-3 text-center">
-            <p className="text-base font-semibold italic" style={{ color: tier.accent }}>
-              “{member.intro}”
-            </p>
+          {member.intro && (
+            <div className="mt-4 rounded-xl bg-white/5 px-4 py-3 text-center">
+              <p className="text-base font-semibold italic" style={{ color: tier.accent }}>
+                “{member.intro}”
+              </p>
+            </div>
+          )}
+
+          <div className="mt-4">
+            <RadarChart stats={member.stats} color={tier.accent} />
           </div>
-        )}
-
-        <div className="mt-4">
-          <RadarChart key={member.id} stats={member.stats} color={tier.accent} />
         </div>
       </div>
     </div>
