@@ -1,0 +1,11 @@
+{
+  "name": "SRG-FC",
+  "short_name": "SRG-FC",
+  "description": "새릉골 풋살 동호회 멤버 랭킹 & 팀 짜기",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "icons": [{ "src": "emblem.png", "sizes": "1170x1550", "type": "image/png", "purpose": "any" }]
+}

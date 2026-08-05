@@ -14,7 +14,7 @@ function App() {
     <div className="mx-auto min-h-screen max-w-md bg-slate-900 text-white">
       <header className="flex items-center gap-3 px-4 pt-6 pb-2">
         <img
-          src={`${import.meta.env.BASE_URL}emblem.jpg`}
+          src={`${import.meta.env.BASE_URL}emblem.png`}
           alt="SRG-FC 엠블럼"
           className="h-12 w-12 flex-none object-contain"
         />
