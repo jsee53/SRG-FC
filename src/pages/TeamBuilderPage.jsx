@@ -1,13 +1,12 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { members } from '../data/members'
 import { buildBalancedTeams } from '../utils/teamBuilder'
 import AttendeeChip from '../components/AttendeeChip'
 import MercenaryForm from '../components/MercenaryForm'
 import TeamSettings from '../components/TeamSettings'
 import TeamResultCard from '../components/TeamResultCard'
-import WaterRunnerCard from '../components/WaterRunnerCard'
 
-export default function TeamBuilderPage() {
+export default function TeamBuilderPage({ onCandidatesChange }) {
   const [attendingIds, setAttendingIds] = useState(new Set())
   const [mercenaries, setMercenaries] = useState([])
   const [teamCount, setTeamCount] = useState(3)
@@ -18,6 +17,11 @@ export default function TeamBuilderPage() {
   const attendingMembers = members.filter((m) => attendingIds.has(m.id))
   const totalAttendees = attendingMembers.length + mercenaries.length
   const canGenerate = totalAttendees >= teamCount
+  const candidates = [...attendingMembers, ...mercenaries]
+
+  useEffect(() => {
+    onCandidatesChange?.(candidates)
+  }, [candidates, onCandidatesChange])
 
   function toggleAttendee(id) {
     setAttendingIds((prev) => {
@@ -60,12 +64,6 @@ export default function TeamBuilderPage() {
       </div>
 
       <MercenaryForm mercenaries={mercenaries} onAdd={handleAddMercenaries} onRemove={handleRemoveMercenary} />
-
-      <WaterRunnerCard
-        title="물 사올 사람 추천"
-        description="아무도 안 사올 때를 대비해, 참가자 중 한 명을 자동으로 추천해 드려요."
-        candidates={[...attendingMembers, ...mercenaries]}
-      />
 
       <TeamSettings
         teamCount={teamCount}
