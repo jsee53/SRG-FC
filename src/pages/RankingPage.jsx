@@ -5,6 +5,7 @@ import PositionTabs from '../components/PositionTabs'
 import SortToggle from '../components/SortToggle'
 import RankingList from '../components/RankingList'
 import MemberDetail from '../components/MemberDetail'
+import WaterRunnerCard from '../components/WaterRunnerCard'
 
 export default function RankingPage() {
   const [filter, setFilter] = useState('전체')
@@ -22,6 +23,12 @@ export default function RankingPage() {
   return (
     <>
       <PositionTabs active={filter} onChange={setFilter} />
+      <WaterRunnerCard
+        title="물 사올 사람 추천"
+        description="현재 랭킹 페이지 기준으로 자동으로 한 명을 추천해 드려요."
+        candidates={ordered}
+      />
+
       <div className="flex items-center justify-end gap-2 px-4 pb-2">
         <span className="text-xs text-slate-400">정렬</span>
         <SortToggle active={sortBy} onChange={setSortBy} />
