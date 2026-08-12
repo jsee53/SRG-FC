@@ -3,7 +3,6 @@ import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
 import { TIER_STYLES } from '../utils/tierStyles'
 import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
-import { aceMemberId } from '../utils/ace'
 import Avatar from './Avatar'
 import RadarChart from './RadarChart'
 
@@ -25,7 +24,7 @@ function NavArrow({ side, onClick, disabled, children }) {
   )
 }
 
-export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev, onNext }) {
+export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev, onNext, isAce, isAdmin, onEdit }) {
   const touchStart = useRef(null)
   const [direction, setDirection] = useState('next')
 
@@ -82,7 +81,16 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="rounded-full bg-emerald-400 px-3 py-1 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300"
+            >
+              수정
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}
@@ -99,9 +107,9 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
           <div className="mt-2 flex items-center gap-4">
             <Avatar name={member.name} photo={member.photo} size="lg" />
             <div>
-              {(member.role || member.id === aceMemberId) && (
+              {(member.role || isAce) && (
                 <div className="mb-1 flex gap-1">
-                  {member.id === aceMemberId && (
+                  {isAce && (
                     <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider ${ACE_STYLE}`}>
                       {ACE_LABEL}
                     </span>

@@ -8,29 +8,25 @@
 
 ```bash
 npm install
+cp .env.example .env   # Supabase URL/anon key 채우기
 npm run dev
 ```
 
 `http://localhost:5173` 에서 확인할 수 있습니다.
 
+## Supabase 설정 (최초 1회)
+
+멤버 데이터는 이제 Supabase(Postgres) DB에서 관리됩니다.
+
+1. https://supabase.com 에서 새 프로젝트 생성
+2. 대시보드 **SQL Editor**에서 `supabase/schema.sql` 내용을 그대로 실행 (테이블 생성 + RLS 정책 + 기존 26명 데이터 이전)
+3. `Settings > API`에서 `Project URL`, `anon public key`를 `.env`에 채우기 (`.env.example` 참고)
+4. `Authentication > Users`에서 관리자 계정을 이메일/비밀번호로 직접 추가 후, `schema.sql` 맨 아래 안내대로 `admin_users` 테이블에 그 유저를 등록
+5. GitHub Actions로 배포하려면 저장소 **Settings > Secrets and variables > Actions**에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`를 등록 (Vercel이면 프로젝트 Environment Variables에 동일하게 등록)
+
 ## 멤버 정보 수정하기
 
-`src/data/members.js` 파일 하나만 편집하면 됩니다. 멤버 배열에 아래와 같은 형태로 추가/수정하세요.
-
-```js
-{
-  id: 6,
-  name: '홍길동',
-  number: 11,      // 등번호 없으면 null
-  birthYear: 1999,  // 한국식 나이로 자동 계산되어 표시됨 (src/utils/age.js)
-  positions: ['MF', 'FW'], // GK | DF | MF | FW, 여러 포지션 겸임 가능
-  tier: 'B',       // S | A | B | C | D
-  rank: 1,         // 같은 티어 안에서의 등수 (낮을수록 상위)
-  photo: '',       // 이미지 URL, 없으면 이니셜 아바타로 자동 표시
-  intro: '한 줄 소개',
-  stats: { passing: 75, dribbling: 65, physical: 60, defense: 50, stamina: 70, finishing: 60 }, // 0~99
-}
-```
+이제 파일을 직접 고치는 대신, **사이트에서 관리자로 로그인**한 뒤 멤버 상세보기의 "수정" 버튼으로 편집합니다. 로그인은 헤더의 "관리자" 버튼에서 할 수 있고, 로그인 없이 둘러보는 건 그대로 열려있습니다.
 
 전체 순위는 티어(S~D) → 같은 티어 내 rank 순으로 정렬됩니다 (`src/utils/tier.js`). OVR은 6개 스탯의 단순 평균(포지션 가중치 없음)으로 계산되어 카드/상세보기와 팀 짜기 밸런싱에 쓰입니다 (`src/utils/calcOvr.js`).
 

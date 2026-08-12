@@ -1,12 +1,11 @@
 import { useRef, useState } from 'react'
-import { members } from '../data/members'
 import { buildBalancedTeams } from '../utils/teamBuilder'
 import AttendeeChip from '../components/AttendeeChip'
 import MercenaryForm from '../components/MercenaryForm'
 import TeamSettings from '../components/TeamSettings'
 import TeamResultCard from '../components/TeamResultCard'
 
-export default function TeamBuilderPage() {
+export default function TeamBuilderPage({ members }) {
   const [attendingIds, setAttendingIds] = useState(new Set())
   const [mercenaries, setMercenaries] = useState([])
   const [teamCount, setTeamCount] = useState(3)

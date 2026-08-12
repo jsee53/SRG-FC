@@ -2,10 +2,9 @@ import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
 import { TIER_STYLES, STAT_LABELS } from '../utils/tierStyles'
 import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
-import { aceMemberId } from '../utils/ace'
 import Avatar from './Avatar'
 
-export default function MemberCard({ member, rank, active, onClick }) {
+export default function MemberCard({ member, rank, active, isAce, onClick }) {
   const tier = TIER_STYLES[member.tier] ?? TIER_STYLES.D
   const ovr = calcOvr(member)
   const meta = [member.positions.join('/'), `${calcAge(member.birthYear)}세`, `OVR ${ovr}`]
@@ -32,9 +31,9 @@ export default function MemberCard({ member, rank, active, onClick }) {
         )}
         <Avatar name={member.name} photo={member.photo} size="md" />
         <div className="min-w-0 flex-1">
-          {(member.role || member.id === aceMemberId) && (
+          {(member.role || isAce) && (
             <div className="mb-0.5 flex gap-1">
-              {member.id === aceMemberId && (
+              {isAce && (
                 <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider ${ACE_STYLE}`}>
                   {ACE_LABEL}
                 </span>
