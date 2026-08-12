@@ -10,4 +10,8 @@ const isVercelOrNetlify = process.env.VERCEL || process.env.NETLIFY
 export default defineConfig({
   base: isVercelOrNetlify ? '/' : '/SRG-FC/',
   plugins: [react(), tailwindcss()],
+  // host: true로 0.0.0.0에 바인딩해서 같은 와이파이의 휴대폰 등에서 PC의 LAN IP로 접속 테스트 가능하게 함
+  server: {
+    host: true,
+  },
 })

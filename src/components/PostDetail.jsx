@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
 import { resolveAuthorName } from '../utils/authorName'
 import { useComments } from '../hooks/useComments'
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
+import { useDismissAnimation } from '../hooks/useDismissAnimation'
 import { inputClass } from './memberFormFields'
 import CommentList from './CommentList'
 
@@ -21,6 +23,9 @@ export default function PostDetail({
   const sheetRef = useRef(null)
   const touchStart = useRef(null)
 
+  useLockBodyScroll()
+  const { closing, requestClose } = useDismissAnimation(onClose)
+
   function handleTouchStart(e) {
     const t = e.touches[0]
     touchStart.current = { x: t.clientX, y: t.clientY, scrollTop: sheetRef.current?.scrollTop ?? 0 }
@@ -36,7 +41,7 @@ export default function PostDetail({
 
     // 맨 위까지 스크롤된 상태에서 아래로 당기면 닫기
     if (dy > 80 && dy > Math.abs(dx) * 1.5 && startScrollTop <= 0) {
-      onClose()
+      requestClose()
     }
   }
 
@@ -66,17 +71,21 @@ export default function PostDetail({
 
   async function handleDeletePost() {
     const { error } = await onDeletePost(post.id)
-    if (!error) onClose()
+    if (!error) requestClose()
   }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 [animation:overlay-in_0.15s_ease-out]"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+        closing ? '[animation:overlay-out_0.2s_ease-out_forwards]' : '[animation:overlay-in_0.15s_ease-out]'
+      }`}
+      onClick={requestClose}
     >
       <div
         ref={sheetRef}
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 [animation:sheet-in_0.2s_ease-out]"
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+          closing ? '[animation:sheet-out_0.2s_ease-out_forwards]' : '[animation:sheet-in_0.2s_ease-out]'
+        }`}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -85,7 +94,7 @@ export default function PostDetail({
           <h2 className="text-lg font-bold">{post.title}</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             className="flex-none rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
           >
             닫기

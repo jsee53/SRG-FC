@@ -3,10 +3,12 @@ import { STAT_LABELS } from '../utils/tierStyles'
 import { TIER_ORDER } from '../utils/tier'
 import { ROLE_LABELS } from '../utils/roles'
 import { Field, inputClass, MemberBasicFields, Select } from './memberFormFields'
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 
 const EMPTY_STATS = Object.fromEntries(Object.keys(STAT_LABELS).map((key) => [key, 60]))
 
 export default function AddMemberForm({ onClose, onAdd }) {
+  useLockBodyScroll()
   const [form, setForm] = useState({
     name: '',
     number: '',

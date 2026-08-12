@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
 import { TIER_STYLES } from '../utils/tierStyles'
 import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import Avatar from './Avatar'
 import RadarChart from './RadarChart'
 
@@ -40,6 +41,15 @@ export default function MemberDetail({
   const touchStart = useRef(null)
   const sheetRef = useRef(null)
   const [direction, setDirection] = useState('next')
+  const [closing, setClosing] = useState(false)
+
+  useLockBodyScroll(Boolean(member))
+
+  // 이 컴포넌트는 부모가 항상 마운트해두고 member로만 표시를 켜고 끄므로,
+  // 새 멤버가 열릴 때마다 이전 닫기 애니메이션 상태를 초기화해야 함
+  useEffect(() => {
+    if (member) setClosing(false)
+  }, [member])
 
   if (!member) return null
   const tier = TIER_STYLES[member.tier] ?? TIER_STYLES.D
@@ -57,6 +67,12 @@ export default function MemberDetail({
   function goNext() {
     setDirection('next')
     onNext?.()
+  }
+
+  function requestClose() {
+    if (closing) return
+    setClosing(true)
+    setTimeout(onClose, 200)
   }
 
   function handleTouchStart(e) {
@@ -80,14 +96,16 @@ export default function MemberDetail({
 
     // 맨 위까지 스크롤된 상태에서 아래로 당기면 닫기 (당겨서 새로고침과 비슷한 제스처)
     if (dy > 80 && dy > Math.abs(dx) * 1.5 && startScrollTop <= 0) {
-      onClose()
+      requestClose()
     }
   }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 [animation:overlay-in_0.15s_ease-out]"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+        closing ? '[animation:overlay-out_0.2s_ease-out_forwards]' : '[animation:overlay-in_0.15s_ease-out]'
+      }`}
+      onClick={requestClose}
     >
       <NavArrow side="left" onClick={goPrev} disabled={!hasPrev}>
         ‹
@@ -98,7 +116,9 @@ export default function MemberDetail({
 
       <div
         ref={sheetRef}
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 [animation:sheet-in_0.2s_ease-out]"
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+          closing ? '[animation:sheet-out_0.2s_ease-out_forwards]' : '[animation:sheet-in_0.2s_ease-out]'
+        }`}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -115,7 +135,7 @@ export default function MemberDetail({
           )}
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
           >
             닫기

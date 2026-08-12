@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { MemberBasicFields, Select } from '../components/memberFormFields'
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 
 export default function ProfilePage({
   session,
@@ -12,6 +13,7 @@ export default function ProfilePage({
   onSignOut,
   onOpenAdmin,
 }) {
+  useLockBodyScroll()
   const [form, setForm] = useState(
     member
       ? {

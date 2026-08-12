@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { inputClass, Select } from './memberFormFields'
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 
 export const PENDING_CLAIM_KEY = 'srgfc_pending_claim'
 
@@ -17,6 +18,7 @@ function describeSignUpError(signUpError) {
 }
 
 export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
+  useLockBodyScroll()
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
