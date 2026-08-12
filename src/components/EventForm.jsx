@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { inputClass, Select } from './memberFormFields'
 import { TIME_OPTIONS, toHHMM } from '../utils/time'
 import { TIER_ORDER } from '../utils/tier'
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import AttendeeChip from './AttendeeChip'
 
 const DEFAULT_MERC_TIER = 'C'
 
 export default function EventForm({ members, event, onClose, onSubmit }) {
+  useLockBodyScroll()
   const [eventDate, setEventDate] = useState(event?.eventDate ?? '')
   const [startTime, setStartTime] = useState(toHHMM(event?.startTime))
   const [endTime, setEndTime] = useState(toHHMM(event?.endTime))

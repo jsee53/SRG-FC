@@ -1,8 +1,10 @@
 import LinkedAccountsSection from '../components/LinkedAccountsSection'
 import AccountsSection from '../components/AccountsSection'
 import { useAccounts } from '../hooks/useAccounts'
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 
 export default function AdminPage({ members, onClose, onUnlinkMember }) {
+  useLockBodyScroll()
   const {
     accounts,
     loading,

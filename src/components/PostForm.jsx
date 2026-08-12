@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { inputClass } from './memberFormFields'
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 
 export default function PostForm({ post, canPostNotice, onClose, onSubmit }) {
+  useLockBodyScroll()
   const [title, setTitle] = useState(post?.title ?? '')
   const [content, setContent] = useState(post?.content ?? '')
   const [isNotice, setIsNotice] = useState(post?.isNotice ?? false)

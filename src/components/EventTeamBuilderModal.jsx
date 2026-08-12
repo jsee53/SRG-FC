@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { buildBalancedTeams } from '../utils/teamBuilder'
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import TeamResultCard from './TeamResultCard'
 import TeamResultSkeleton from './TeamResultSkeleton'
 
@@ -14,6 +15,7 @@ function toParticipants(event, members) {
 }
 
 export default function EventTeamBuilderModal({ event, members, onClose, onSave }) {
+  useLockBodyScroll()
   const participants = toParticipants(event, members)
   const [teamCount, setTeamCount] = useState(2)
   const [teams, setTeams] = useState(null)
