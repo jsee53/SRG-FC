@@ -5,7 +5,7 @@ function EmptyState() {
   return <p className="py-10 text-center text-slate-400">해당 포지션 멤버가 없습니다.</p>
 }
 
-export default function RankingList({ members, filter, sortBy, selectedId, onSelect }) {
+export default function RankingList({ members, filter, sortBy, selectedId, aceId, onSelect }) {
   const filtered =
     filter === '전체' ? members : members.filter((m) => m.positions.includes(filter))
 
@@ -26,6 +26,7 @@ export default function RankingList({ members, filter, sortBy, selectedId, onSel
                   key={member.id}
                   member={member}
                   active={member.id === selectedId}
+                  isAce={member.id === aceId}
                   onClick={() => onSelect(member)}
                 />
               ))}
@@ -47,6 +48,7 @@ export default function RankingList({ members, filter, sortBy, selectedId, onSel
           member={member}
           rank={index + 1}
           active={member.id === selectedId}
+          isAce={member.id === aceId}
           onClick={() => onSelect(member)}
         />
       ))}

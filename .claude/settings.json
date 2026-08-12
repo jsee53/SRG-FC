@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(git commit -m ' *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s \"https://github.com/jsee53/SRG-FC/pull/3.diff\")",
+      "Bash(curl -sL -o /tmp/pr3.diff -w \"%{http_code}\\\\n\" \"https://github.com/jsee53/SRG-FC/pull/3.diff\")",
+      "Read(//tmp/**)",
+      "Read(//c/tmp/**)",
+      "Bash(git remote *)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(npm audit *)"
     ]
   }
 }
