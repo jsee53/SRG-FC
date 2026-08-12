@@ -7,13 +7,16 @@ import RankingList from '../components/RankingList'
 import MemberDetail from '../components/MemberDetail'
 import MemberEditForm from '../components/MemberEditForm'
 import AddMemberForm from '../components/AddMemberForm'
+import StatsEditForm from '../components/StatsEditForm'
 
 export default function RankingPage({
   members,
   isAdmin,
+  canManageStats,
   onSaveMember,
   onAddMember,
   onDeleteMember,
+  onSaveMemberStats,
   attendanceCountByMemberId,
   bestPlayerCountByMemberId,
 }) {
@@ -21,6 +24,7 @@ export default function RankingPage({
   const [sortBy, setSortBy] = useState('overall')
   const [selectedMember, setSelectedMember] = useState(null)
   const [editingMember, setEditingMember] = useState(null)
+  const [editingStatsMember, setEditingStatsMember] = useState(null)
   const [showAddMember, setShowAddMember] = useState(false)
 
   // 관리자가 다른 곳에서 수정하고 members가 새로 로드되면, 열려있는 상세보기도 최신 값으로 갱신.
@@ -74,7 +78,9 @@ export default function RankingPage({
         onNext={() => moveTo(1)}
         isAce={selectedMember?.id === aceId}
         isAdmin={isAdmin}
+        canManageStats={canManageStats}
         onEdit={() => setEditingMember(selectedMember)}
+        onEditStats={() => setEditingStatsMember(selectedMember)}
         attendanceCount={selectedMember ? attendanceCountByMemberId[selectedMember.id] ?? 0 : 0}
         bestPlayerCount={selectedMember ? bestPlayerCountByMemberId[selectedMember.id] ?? 0 : 0}
       />
@@ -85,6 +91,14 @@ export default function RankingPage({
           onClose={() => setEditingMember(null)}
           onSave={onSaveMember}
           onDelete={onDeleteMember}
+        />
+      )}
+
+      {editingStatsMember && (
+        <StatsEditForm
+          member={editingStatsMember}
+          onClose={() => setEditingStatsMember(null)}
+          onSave={onSaveMemberStats}
         />
       )}
 

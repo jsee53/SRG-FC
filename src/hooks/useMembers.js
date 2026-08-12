@@ -92,6 +92,20 @@ export function useMembers() {
     return { error: rpcError }
   }, [refetch])
 
+  // "등급/능력치 수정" 권한만 있는 계정용 — tier/stats만 건드리는 좁은 함수를 통해서만 저장
+  const updateMemberStats = useCallback(async (id, tier, stats) => {
+    const { error: rpcError } = await supabase.rpc('update_member_stats', {
+      target_id: id,
+      new_tier: tier,
+      new_stats: stats,
+    })
+
+    if (!rpcError) {
+      await refetch()
+    }
+    return { error: rpcError }
+  }, [refetch])
+
   const claimMember = useCallback(async (id) => {
     const { error: rpcError } = await supabase.rpc('claim_member', { target_id: id })
     if (!rpcError) {
@@ -129,6 +143,7 @@ export function useMembers() {
     updateMember,
     addMember,
     updateOwnMember,
+    updateMemberStats,
     claimMember,
     unlinkMember,
     deleteMember,

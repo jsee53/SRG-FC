@@ -1,4 +1,4 @@
-import { TIER_ORDER, TIER_LABELS, compareByOvr } from '../utils/tier'
+import { TIER_ORDER, TIER_NAMES, compareByOvr } from '../utils/tier'
 import MemberCard from './MemberCard'
 
 function EmptyState() {
@@ -19,7 +19,7 @@ export default function RankingList({ members, filter, sortBy, selectedId, aceId
       <div className="flex flex-col gap-5 px-4 pb-6">
         {groups.map((group) => (
           <section key={group.tier}>
-            <h2 className="mb-2 text-sm font-semibold text-slate-400">{TIER_LABELS[group.tier]}</h2>
+            <h2 className="mb-2 text-sm font-semibold text-slate-400">{TIER_NAMES[group.tier]}</h2>
             <div className="flex flex-col gap-3">
               {group.members.map((member) => (
                 <MemberCard

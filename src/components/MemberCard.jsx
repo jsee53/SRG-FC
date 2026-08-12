@@ -1,6 +1,7 @@
 import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
 import { TIER_STYLES, STAT_LABELS } from '../utils/tierStyles'
+import { TIER_NAMES } from '../utils/tier'
 import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
 import Avatar from './Avatar'
 
@@ -50,8 +51,8 @@ export default function MemberCard({ member, rank, active, isAce, onClick }) {
           <div className="flex items-center gap-2">
             <span className="truncate font-semibold">{member.name}</span>
             {member.number != null && <span className="text-sm text-slate-400">No.{member.number}</span>}
-            <span className={`ml-auto rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>
-              {member.tier}
+            <span className={`ml-auto flex-none rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>
+              {TIER_NAMES[member.tier]}
             </span>
           </div>
           <div className="mt-0.5 text-xs text-slate-400">{meta}</div>

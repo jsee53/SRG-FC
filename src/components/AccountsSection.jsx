@@ -23,6 +23,8 @@ export default function AccountsSection({
   onRevokeEvent,
   onGrantNotice,
   onRevokeNotice,
+  onGrantStats,
+  onRevokeStats,
 }) {
   const [pendingKey, setPendingKey] = useState(null)
 
@@ -35,6 +37,12 @@ export default function AccountsSection({
   async function handleToggleNotice(account) {
     setPendingKey(`notice-${account.userId}`)
     await (account.isNoticeManager ? onRevokeNotice(account.userId) : onGrantNotice(account.userId))
+    setPendingKey(null)
+  }
+
+  async function handleToggleStats(account) {
+    setPendingKey(`stats-${account.userId}`)
+    await (account.isStatsManager ? onRevokeStats(account.userId) : onGrantStats(account.userId))
     setPendingKey(null)
   }
 
@@ -64,6 +72,12 @@ export default function AccountsSection({
                 active={account.isNoticeManager}
                 pending={pendingKey === `notice-${account.userId}`}
                 onToggle={() => handleToggleNotice(account)}
+              />
+              <PermissionToggle
+                label="능력치 권한"
+                active={account.isStatsManager}
+                pending={pendingKey === `stats-${account.userId}`}
+                onToggle={() => handleToggleStats(account)}
               />
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { STAT_LABELS } from '../utils/tierStyles'
-import { TIER_ORDER } from '../utils/tier'
+import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
 import { ROLE_LABELS } from '../utils/roles'
 import { Field, inputClass, MemberBasicFields, Select } from './memberFormFields'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
@@ -78,7 +78,7 @@ export default function AddMemberForm({ onClose, onAdd }) {
               <Select value={form.tier} onChange={(e) => setForm((p) => ({ ...p, tier: e.target.value }))}>
                 {TIER_ORDER.map((t) => (
                   <option key={t} value={t}>
-                    {t}
+                    {TIER_NAMES[t]}
                   </option>
                 ))}
               </Select>

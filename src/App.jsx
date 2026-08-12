@@ -31,10 +31,11 @@ function App() {
     addMember,
     deleteMember,
     updateOwnMember,
+    updateMemberStats,
     claimMember,
     unlinkMember,
   } = useMembers()
-  const { session, isAdmin, canManageEvents, canPostNotice, signIn, signUp, signOut } = useAuth()
+  const { session, isAdmin, canManageEvents, canPostNotice, canManageStats, signIn, signUp, signOut } = useAuth()
   const {
     events,
     loading: eventsLoading,
@@ -162,9 +163,11 @@ function App() {
             <RankingPage
               members={members}
               isAdmin={isAdmin}
+              canManageStats={canManageStats}
               onSaveMember={updateMember}
               onAddMember={addMember}
               onDeleteMember={deleteMember}
+              onSaveMemberStats={updateMemberStats}
               attendanceCountByMemberId={attendanceCountByMemberId}
               bestPlayerCountByMemberId={bestPlayerCountByMemberId}
             />
