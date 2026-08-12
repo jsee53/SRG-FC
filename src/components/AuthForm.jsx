@@ -127,6 +127,8 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
           <form onSubmit={mode === 'login' ? handleLogin : handleSignUp} className="mt-4 flex flex-col gap-3">
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               required
               placeholder="이메일"
               value={email}
@@ -135,6 +137,8 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
             />
             <input
               type="password"
+              name="password"
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               required
               minLength={6}
               placeholder="비밀번호"

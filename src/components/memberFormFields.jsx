@@ -1,7 +1,9 @@
 export const POSITION_OPTIONS = ['GK', 'DF', 'MF', 'FW']
 
+// 16px(text-base) 미만이면 iOS/Android가 이 입력칸에 포커스될 때 화면을 자동으로 확대해버려서
+// (그 뒤로 비율이 깨진 것처럼 보임) 최소 16px을 유지해야 함 — text-sm(14px) 쓰지 말 것
 export const inputClass =
-  'rounded-lg bg-white/10 px-2.5 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400'
+  'rounded-lg bg-white/10 px-2.5 py-1.5 text-base text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400'
 
 export function Field({ label, children }) {
   return (

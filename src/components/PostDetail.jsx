@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { resolveAuthorName } from '../utils/authorName'
 import { useComments } from '../hooks/useComments'
 import { inputClass } from './memberFormFields'
@@ -18,6 +18,27 @@ export default function PostDetail({
   const { comments, loading, createComment, deleteComment, toggleLike } = useComments(post.id)
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const sheetRef = useRef(null)
+  const touchStart = useRef(null)
+
+  function handleTouchStart(e) {
+    const t = e.touches[0]
+    touchStart.current = { x: t.clientX, y: t.clientY, scrollTop: sheetRef.current?.scrollTop ?? 0 }
+  }
+
+  function handleTouchEnd(e) {
+    if (!touchStart.current) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - touchStart.current.x
+    const dy = t.clientY - touchStart.current.y
+    const startScrollTop = touchStart.current.scrollTop
+    touchStart.current = null
+
+    // 맨 위까지 스크롤된 상태에서 아래로 당기면 닫기
+    if (dy > 80 && dy > Math.abs(dx) * 1.5 && startScrollTop <= 0) {
+      onClose()
+    }
+  }
 
   const canDeletePost = isAdmin || session?.user.id === post.authorId
   const canEditPost = session?.user.id === post.authorId
@@ -54,8 +75,11 @@ export default function PostDetail({
       onClick={onClose}
     >
       <div
+        ref={sheetRef}
         className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 [animation:sheet-in_0.2s_ease-out]"
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{post.title}</h2>
