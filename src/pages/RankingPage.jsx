@@ -21,7 +21,7 @@ export default function RankingPage({
   bestPlayerCountByMemberId,
 }) {
   const [filter, setFilter] = useState('전체')
-  const [sortBy, setSortBy] = useState('overall')
+  const [sortBy, setSortBy] = useState('name')
   const [selectedMember, setSelectedMember] = useState(null)
   const [editingMember, setEditingMember] = useState(null)
   const [editingStatsMember, setEditingStatsMember] = useState(null)

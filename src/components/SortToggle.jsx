@@ -1,6 +1,6 @@
 const OPTIONS = [
   { key: 'overall', label: '전체 순위' },
-  { key: 'tier', label: '티어별' },
+  { key: 'name', label: '이름순' },
 ]
 
 export default function SortToggle({ active, onChange }) {

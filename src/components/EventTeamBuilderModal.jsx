@@ -17,7 +17,7 @@ function toParticipants(event, members) {
 export default function EventTeamBuilderModal({ event, members, onClose, onSave }) {
   useLockBodyScroll()
   const participants = toParticipants(event, members)
-  const [teamCount, setTeamCount] = useState(2)
+  const [teamCount, setTeamCount] = useState(3)
   const [teams, setTeams] = useState(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [saving, setSaving] = useState(false)
