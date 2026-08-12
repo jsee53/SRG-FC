@@ -125,7 +125,7 @@ export default function EventForm({ members, event, onClose, onSubmit }) {
 
           <div>
             <p className="mb-2 text-xs text-slate-400">
-              참석자 선택 ({attendingIds.size + extras.length}명{extras.length > 0 && ` · 용병 ${extras.length}명`})
+              참석자 선택 ({attendingIds.size}명{extras.length > 0 && ` + 용병 ${extras.length}명`})
             </p>
             <div className="grid grid-cols-2 gap-2">
               {sortedMembers.map((member) => (

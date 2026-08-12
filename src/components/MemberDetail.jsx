@@ -38,6 +38,7 @@ export default function MemberDetail({
   bestPlayerCount,
 }) {
   const touchStart = useRef(null)
+  const sheetRef = useRef(null)
   const [direction, setDirection] = useState('next')
 
   if (!member) return null
@@ -60,7 +61,7 @@ export default function MemberDetail({
 
   function handleTouchStart(e) {
     const t = e.touches[0]
-    touchStart.current = { x: t.clientX, y: t.clientY }
+    touchStart.current = { x: t.clientX, y: t.clientY, scrollTop: sheetRef.current?.scrollTop ?? 0 }
   }
 
   function handleTouchEnd(e) {
@@ -68,11 +69,18 @@ export default function MemberDetail({
     const t = e.changedTouches[0]
     const dx = t.clientX - touchStart.current.x
     const dy = t.clientY - touchStart.current.y
+    const startScrollTop = touchStart.current.scrollTop
     touchStart.current = null
 
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
       if (dx < 0) goNext()
       else goPrev()
+      return
+    }
+
+    // 맨 위까지 스크롤된 상태에서 아래로 당기면 닫기 (당겨서 새로고침과 비슷한 제스처)
+    if (dy > 80 && dy > Math.abs(dx) * 1.5 && startScrollTop <= 0) {
+      onClose()
     }
   }
 
@@ -89,6 +97,7 @@ export default function MemberDetail({
       </NavArrow>
 
       <div
+        ref={sheetRef}
         className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 [animation:sheet-in_0.2s_ease-out]"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}

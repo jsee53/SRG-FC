@@ -31,6 +31,7 @@ export default function EventCard({
   const hasTeams = event.attendees.some((a) => a.teamIndex != null)
   const timeRange = formatTimeRange(event.startTime, event.endTime)
   const mercCount = event.attendees.filter((a) => a.memberId == null).length
+  const rosterCount = event.attendees.length - mercCount
 
   async function handleToggleConfirmed() {
     setPendingConfirm(true)
@@ -66,8 +67,8 @@ export default function EventCard({
             )}
           </div>
           <p className="mt-0.5 text-xs text-slate-400">
-            {timeRange && `${timeRange} · `}참석자 {event.attendees.length}명
-            {mercCount > 0 && ` (용병 ${mercCount}명)`}
+            {timeRange && `${timeRange} · `}참석자 {rosterCount}명
+            {mercCount > 0 && ` + 용병 ${mercCount}명`}
           </p>
         </button>
 
