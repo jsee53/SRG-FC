@@ -6,18 +6,29 @@ import SortToggle from '../components/SortToggle'
 import RankingList from '../components/RankingList'
 import MemberDetail from '../components/MemberDetail'
 import MemberEditForm from '../components/MemberEditForm'
+import AddMemberForm from '../components/AddMemberForm'
 
-export default function RankingPage({ members, isAdmin, onSaveMember }) {
+export default function RankingPage({
+  members,
+  isAdmin,
+  onSaveMember,
+  onAddMember,
+  onDeleteMember,
+  attendanceCountByMemberId,
+  bestPlayerCountByMemberId,
+}) {
   const [filter, setFilter] = useState('전체')
   const [sortBy, setSortBy] = useState('overall')
   const [selectedMember, setSelectedMember] = useState(null)
   const [editingMember, setEditingMember] = useState(null)
+  const [showAddMember, setShowAddMember] = useState(false)
 
-  // 관리자가 다른 곳에서 수정하고 members가 새로 로드되면, 열려있는 상세보기도 최신 값으로 갱신
+  // 관리자가 다른 곳에서 수정하고 members가 새로 로드되면, 열려있는 상세보기도 최신 값으로 갱신.
+  // 삭제됐다면(더 이상 목록에 없으면) 상세보기를 닫음
   useEffect(() => {
     if (!selectedMember) return
     const updated = members.find((m) => m.id === selectedMember.id)
-    if (updated) setSelectedMember(updated)
+    setSelectedMember(updated ?? null)
   }, [members])
 
   const ordered = sortMembersFlat(filterMembers(members, filter), sortBy)
@@ -33,6 +44,15 @@ export default function RankingPage({ members, isAdmin, onSaveMember }) {
     <>
       <PositionTabs active={filter} onChange={setFilter} />
       <div className="flex items-center justify-end gap-2 px-4 pb-2">
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => setShowAddMember(true)}
+            className="mr-auto rounded-full bg-white/10 px-3 py-1 text-xs text-slate-300 transition-colors hover:bg-white/20"
+          >
+            멤버 추가
+          </button>
+        )}
         <span className="text-xs text-slate-400">정렬</span>
         <SortToggle active={sortBy} onChange={setSortBy} />
       </div>
@@ -55,11 +75,20 @@ export default function RankingPage({ members, isAdmin, onSaveMember }) {
         isAce={selectedMember?.id === aceId}
         isAdmin={isAdmin}
         onEdit={() => setEditingMember(selectedMember)}
+        attendanceCount={selectedMember ? attendanceCountByMemberId[selectedMember.id] ?? 0 : 0}
+        bestPlayerCount={selectedMember ? bestPlayerCountByMemberId[selectedMember.id] ?? 0 : 0}
       />
 
       {editingMember && (
-        <MemberEditForm member={editingMember} onClose={() => setEditingMember(null)} onSave={onSaveMember} />
+        <MemberEditForm
+          member={editingMember}
+          onClose={() => setEditingMember(null)}
+          onSave={onSaveMember}
+          onDelete={onDeleteMember}
+        />
       )}
+
+      {showAddMember && <AddMemberForm onClose={() => setShowAddMember(false)} onAdd={onAddMember} />}
     </>
   )
 }

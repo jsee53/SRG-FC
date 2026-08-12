@@ -9,11 +9,11 @@ function mapRow(row) {
     birthYear: row.birth_year,
     positions: row.positions ?? [],
     tier: row.tier,
-    rank: row.rank,
-    photo: row.photo ?? '',
     intro: row.intro ?? '',
     role: row.role ?? undefined,
     stats: row.stats,
+    userId: row.user_id ?? null,
+    linkedEmail: row.linked_email ?? null,
   }
 }
 
@@ -48,8 +48,6 @@ export function useMembers() {
         birth_year: updates.birthYear,
         positions: updates.positions,
         tier: updates.tier,
-        rank: updates.rank,
-        photo: updates.photo,
         intro: updates.intro,
         role: updates.role,
         stats: updates.stats,
@@ -62,5 +60,77 @@ export function useMembers() {
     return { error: updateError }
   }, [refetch])
 
-  return { members, loading, error, refetch, updateMember }
+  const addMember = useCallback(async (newMember) => {
+    const { error: insertError } = await supabase.from('members').insert({
+      name: newMember.name,
+      number: newMember.number,
+      birth_year: newMember.birthYear,
+      positions: newMember.positions,
+      tier: newMember.tier,
+      intro: newMember.intro,
+      role: newMember.role,
+      stats: newMember.stats,
+    })
+
+    if (!insertError) {
+      await refetch()
+    }
+    return { error: insertError }
+  }, [refetch])
+
+  const updateOwnMember = useCallback(async (id, updates) => {
+    const { error: rpcError } = await supabase.rpc('update_own_member', {
+      target_id: id,
+      new_number: updates.number,
+      new_birth_year: updates.birthYear,
+      new_positions: updates.positions,
+    })
+
+    if (!rpcError) {
+      await refetch()
+    }
+    return { error: rpcError }
+  }, [refetch])
+
+  const claimMember = useCallback(async (id) => {
+    const { error: rpcError } = await supabase.rpc('claim_member', { target_id: id })
+    if (!rpcError) {
+      await refetch()
+    }
+    return { error: rpcError }
+  }, [refetch])
+
+  // 관리자가 계정-멤버 연결을 끊음 (관리자는 members를 자유롭게 수정할 수 있는 기존 RLS 정책을 그대로 씀)
+  const unlinkMember = useCallback(async (id) => {
+    const { error: unlinkError } = await supabase
+      .from('members')
+      .update({ user_id: null, linked_email: null })
+      .eq('id', id)
+
+    if (!unlinkError) {
+      await refetch()
+    }
+    return { error: unlinkError }
+  }, [refetch])
+
+  const deleteMember = useCallback(async (id) => {
+    const { error: deleteError } = await supabase.from('members').delete().eq('id', id)
+    if (!deleteError) {
+      await refetch()
+    }
+    return { error: deleteError }
+  }, [refetch])
+
+  return {
+    members,
+    loading,
+    error,
+    refetch,
+    updateMember,
+    addMember,
+    updateOwnMember,
+    claimMember,
+    unlinkMember,
+    deleteMember,
+  }
 }

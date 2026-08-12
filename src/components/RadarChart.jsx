@@ -16,6 +16,7 @@ function polygonAt(radius) {
 
 export default function RadarChart({ stats, color = '#34d399' }) {
   const dataPoints = AXES.map((key, i) => pointAt(i, (stats[key] / 99) * RADIUS).join(',')).join(' ')
+  const maxStat = Math.max(...AXES.map((key) => stats[key]))
 
   return (
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="mx-auto w-full max-w-[280px]">
@@ -43,8 +44,18 @@ export default function RadarChart({ stats, color = '#34d399' }) {
       />
       {AXES.map((key, i) => {
         const [x, y] = pointAt(i, RADIUS + 24)
+        const isTop = stats[key] === maxStat
         return (
-          <text key={key} x={x} y={y} fontSize="11" fill="#cbd5e1" textAnchor="middle" dominantBaseline="middle">
+          <text
+            key={key}
+            x={x}
+            y={y}
+            fontSize="11"
+            fontWeight={isTop ? 'bold' : 'normal'}
+            fill={isTop ? '#ef4444' : '#cbd5e1'}
+            textAnchor="middle"
+            dominantBaseline="middle"
+          >
             {STAT_LABELS[key]} {stats[key]}
           </text>
         )

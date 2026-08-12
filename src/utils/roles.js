@@ -3,7 +3,7 @@ export const ROLE_LABELS = {
   captain: 'CAPTAIN',
   viceCaptain: 'VICE CAPTAIN',
   manager: 'GENERAL MANAGER',
-  creator: 'CREATOR',
+  creator: 'ADMINISTRATOR',
 }
 
 export const ROLE_STYLES = {

@@ -6,18 +6,8 @@ const SIZE_CLASSES = {
   lg: 'h-20 w-20 text-xl',
 }
 
-export default function Avatar({ name, photo, size = 'md' }) {
+export default function Avatar({ name, size = 'md' }) {
   const sizeClass = SIZE_CLASSES[size] ?? SIZE_CLASSES.md
-
-  if (photo) {
-    return (
-      <img
-        src={photo}
-        alt={name}
-        className={`${sizeClass} rounded-full object-cover ring-2 ring-white/20`}
-      />
-    )
-  }
 
   return (
     <div

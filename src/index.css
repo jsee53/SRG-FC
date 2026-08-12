@@ -11,6 +11,13 @@ button:not(:disabled) {
   cursor: pointer;
 }
 
+/* 네이티브 select 드롭다운은 OS 기본 배경(흰색)을 쓰는 경우가 많아서,
+   text-white가 적용된 옵션이 흰 배경에 흰 글씨로 안 보이는 문제를 막기 위해 명시 지정 */
+select option {
+  background-color: #1e293b;
+  color: #f3f4f6;
+}
+
 @keyframes overlay-in {
   from { opacity: 0; }
   to { opacity: 1; }

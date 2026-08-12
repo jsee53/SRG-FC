@@ -5,6 +5,8 @@ export function useAuth() {
   const [session, setSession] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [canManageEvents, setCanManageEvents] = useState(false)
+  const [canPostNotice, setCanPostNotice] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -24,6 +26,8 @@ export function useAuth() {
   useEffect(() => {
     if (!session) {
       setIsAdmin(false)
+      setCanManageEvents(false)
+      setCanPostNotice(false)
       return
     }
 
@@ -37,6 +41,24 @@ export function useAuth() {
         if (!cancelled) setIsAdmin(Boolean(data))
       })
 
+    supabase
+      .from('event_managers')
+      .select('user_id')
+      .eq('user_id', session.user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setCanManageEvents(Boolean(data))
+      })
+
+    supabase
+      .from('notice_managers')
+      .select('user_id')
+      .eq('user_id', session.user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setCanPostNotice(Boolean(data))
+      })
+
     return () => {
       cancelled = true
     }
@@ -47,9 +69,31 @@ export function useAuth() {
     return { error }
   }
 
+  async function signUp(email, password) {
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) return { session: null, error }
+
+    // 이미 가입된(확인 완료) 이메일로 다시 가입하면 supabase가 열거 공격 방지를 위해
+    // 에러 없이 "가짜" 유저를 돌려주는데, identities가 빈 배열인 것으로만 구분 가능함
+    if (data.user && data.user.identities?.length === 0) {
+      return { session: null, error: { message: 'duplicate_email' } }
+    }
+
+    return { session: data.session ?? null, error: null }
+  }
+
   async function signOut() {
     await supabase.auth.signOut()
   }
 
-  return { session, authLoading, isAdmin, signIn, signOut }
+  return {
+    session,
+    authLoading,
+    isAdmin,
+    canManageEvents: isAdmin || canManageEvents,
+    canPostNotice: isAdmin || canPostNotice,
+    signIn,
+    signUp,
+    signOut,
+  }
 }
