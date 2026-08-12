@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { TIER_ORDER, TIER_LABELS } from '../utils/tier'
+import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
 import { TIER_STYLES } from '../utils/tierStyles'
 
 export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
@@ -39,7 +39,7 @@ export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
                 tier === t ? TIER_STYLES[t].badge : 'bg-white/10 text-slate-300 hover:bg-white/20'
               }`}
             >
-              {t}
+              {TIER_NAMES[t]}
             </button>
           ))}
         </div>
@@ -60,7 +60,7 @@ export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
               key={merc.id}
               className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${TIER_STYLES[merc.tier].badge}`}
             >
-              {merc.label} · {TIER_LABELS[merc.tier]}
+              {merc.label} · {TIER_NAMES[merc.tier]}
               <button
                 type="button"
                 onClick={() => onRemove(merc.id)}

@@ -1,4 +1,5 @@
 import { TIER_STYLES } from '../utils/tierStyles'
+import { TIER_NAMES } from '../utils/tier'
 import Avatar from './Avatar'
 
 export default function AttendeeChip({ member, selected, onToggle }) {
@@ -20,7 +21,7 @@ export default function AttendeeChip({ member, selected, onToggle }) {
           <span className={`truncate text-sm font-medium ${selected ? 'text-emerald-300' : ''}`}>
             {member.name}
           </span>
-          <span className={`rounded px-1 text-[10px] font-bold ${tier.badge}`}>{member.tier}</span>
+          <span className={`flex-none rounded px-1 text-[10px] font-bold ${tier.badge}`}>{TIER_NAMES[member.tier]}</span>
         </div>
         <div className={`truncate text-xs ${selected ? 'text-emerald-200/70' : 'text-slate-400'}`}>
           {member.positions.join('/')}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
 import { TIER_STYLES } from '../utils/tierStyles'
+import { TIER_NAMES } from '../utils/tier'
 import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import Avatar from './Avatar'
@@ -34,7 +35,9 @@ export default function MemberDetail({
   onNext,
   isAce,
   isAdmin,
+  canManageStats,
   onEdit,
+  onEditStats,
   attendanceCount,
   bestPlayerCount,
 }) {
@@ -133,6 +136,15 @@ export default function MemberDetail({
               수정
             </button>
           )}
+          {canManageStats && !isAdmin && (
+            <button
+              type="button"
+              onClick={onEditStats}
+              className="rounded-full bg-emerald-400 px-3 py-1 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300"
+            >
+              능력치 수정
+            </button>
+          )}
           <button
             type="button"
             onClick={requestClose}
@@ -168,7 +180,7 @@ export default function MemberDetail({
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold">{member.name}</h2>
                 {member.number != null && <span className="text-slate-400">No.{member.number}</span>}
-                <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>{member.tier}</span>
+                <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>{TIER_NAMES[member.tier]}</span>
               </div>
               <p className="mt-0.5 text-sm text-slate-400">{meta}</p>
               <p className="mt-0.5 text-sm text-slate-400">{activityMeta}</p>

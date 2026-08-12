@@ -13,6 +13,8 @@ export default function AdminPage({ members, onClose, onUnlinkMember }) {
     revokeEventManager,
     grantNoticeManager,
     revokeNoticeManager,
+    grantStatsManager,
+    revokeStatsManager,
   } = useAccounts()
 
   return (
@@ -45,6 +47,8 @@ export default function AdminPage({ members, onClose, onUnlinkMember }) {
             onRevokeEvent={revokeEventManager}
             onGrantNotice={grantNoticeManager}
             onRevokeNotice={revokeNoticeManager}
+            onGrantStats={grantStatsManager}
+            onRevokeStats={revokeStatsManager}
           />
         </div>
       </div>

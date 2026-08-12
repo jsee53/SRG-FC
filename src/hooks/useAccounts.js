@@ -9,6 +9,7 @@ function mapRow(row) {
     memberName: row.member_name,
     isEventManager: row.is_event_manager,
     isNoticeManager: row.is_notice_manager,
+    isStatsManager: row.is_stats_manager,
   }
 }
 
@@ -67,6 +68,22 @@ export function useAccounts() {
     return { error: revokeError }
   }, [refetch])
 
+  const grantStatsManager = useCallback(async (userId) => {
+    const { error: grantError } = await supabase.from('stats_managers').insert({ user_id: userId })
+    if (!grantError) {
+      await refetch()
+    }
+    return { error: grantError }
+  }, [refetch])
+
+  const revokeStatsManager = useCallback(async (userId) => {
+    const { error: revokeError } = await supabase.from('stats_managers').delete().eq('user_id', userId)
+    if (!revokeError) {
+      await refetch()
+    }
+    return { error: revokeError }
+  }, [refetch])
+
   return {
     accounts,
     loading,
@@ -76,5 +93,7 @@ export function useAccounts() {
     revokeEventManager,
     grantNoticeManager,
     revokeNoticeManager,
+    grantStatsManager,
+    revokeStatsManager,
   }
 }

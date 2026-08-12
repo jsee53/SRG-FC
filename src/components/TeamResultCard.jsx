@@ -1,4 +1,5 @@
 import { TIER_STYLES } from '../utils/tierStyles'
+import { TIER_NAMES } from '../utils/tier'
 import { powerScore } from '../utils/teamBuilder'
 import Avatar from './Avatar'
 
@@ -22,16 +23,16 @@ export default function TeamResultCard({ index, team }) {
                 용병
               </div>
               <span className="flex-1 text-slate-300">{entry.label}</span>
-              <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${TIER_STYLES[entry.tier].badge}`}>
-                {entry.tier}
+              <span className={`flex-none rounded px-1.5 py-0.5 text-xs font-bold ${TIER_STYLES[entry.tier].badge}`}>
+                {TIER_NAMES[entry.tier]}
               </span>
             </div>
           ) : (
             <div key={entry.id} className="flex items-center gap-2 text-sm">
               <Avatar name={entry.name} size="xs" />
               <span className="flex-1 truncate">{entry.name}</span>
-              <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${TIER_STYLES[entry.tier].badge}`}>
-                {entry.tier}
+              <span className={`flex-none rounded px-1.5 py-0.5 text-xs font-bold ${TIER_STYLES[entry.tier].badge}`}>
+                {TIER_NAMES[entry.tier]}
               </span>
             </div>
           ),

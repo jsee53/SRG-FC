@@ -581,6 +581,85 @@ create trigger events_guard_confirmed
   execute function prevent_non_admin_confirm_change();
 
 -- =============================================================
+-- Phase 5: 등급/능력치 수정 권한을 관리자가 따로 부여 가능하게
+-- =============================================================
+
+-- 28) "등급/능력치 수정" 권한을 부여받은 계정 목록 (event_managers/notice_managers와 같은 패턴)
+create table if not exists stats_managers (
+  user_id uuid primary key references auth.users (id) on delete cascade
+);
+alter table stats_managers enable row level security;
+
+create policy "users can check their own stats manager status"
+  on stats_managers for select
+  using (auth.uid() = user_id);
+create policy "admins can view all stats managers"
+  on stats_managers for select
+  using (exists (select 1 from admin_users where user_id = auth.uid()));
+create policy "only admins can grant stats manager"
+  on stats_managers for insert
+  with check (exists (select 1 from admin_users where user_id = auth.uid()));
+create policy "only admins can revoke stats manager"
+  on stats_managers for delete
+  using (exists (select 1 from admin_users where user_id = auth.uid()));
+
+create or replace function is_stats_manager()
+returns boolean as $$
+  select exists (select 1 from admin_users where user_id = auth.uid())
+      or exists (select 1 from stats_managers where user_id = auth.uid());
+$$ language sql security definer stable;
+
+-- 29) 등급(tier)/능력치(stats)만 건드리는 좁은 함수 — 관리자의 "수정" 폼처럼 이름/포지션/한줄평 등
+--    다른 필드는 이 경로로 못 건드리게 함으로써, 이 권한만 받은 계정이 손댈 수 있는 범위를 좁혀둠
+create or replace function update_member_stats(target_id int, new_tier text, new_stats jsonb)
+returns void as $$
+begin
+  if not is_stats_manager() then
+    raise exception 'not a stats manager';
+  end if;
+
+  update members set tier = new_tier, stats = new_stats where id = target_id;
+  if not found then
+    raise exception 'member not found';
+  end if;
+end;
+$$ language plpgsql security definer;
+
+-- 30) admin_list_accounts에 능력치 권한 여부도 같이 내려주도록 갱신.
+--    반환 컬럼이 늘어나서 create or replace로는 안 되고 drop 후 재생성해야 함
+drop function if exists admin_list_accounts();
+
+create function admin_list_accounts()
+returns table (
+  user_id uuid,
+  email text,
+  member_id int,
+  member_name text,
+  is_event_manager boolean,
+  is_notice_manager boolean,
+  is_stats_manager boolean
+) as $$
+begin
+  if not exists (select 1 from admin_users where admin_users.user_id = auth.uid()) then
+    raise exception 'admin only';
+  end if;
+
+  return query
+    select
+      u.id,
+      u.email::text,
+      m.id,
+      m.name,
+      exists (select 1 from event_managers em where em.user_id = u.id),
+      exists (select 1 from notice_managers nm where nm.user_id = u.id),
+      exists (select 1 from stats_managers sm where sm.user_id = u.id)
+    from auth.users u
+    left join members m on m.user_id = u.id
+    order by u.created_at;
+end;
+$$ language plpgsql security definer;
+
+-- =============================================================
 -- 관리자 등록 방법 (이 SQL을 실행한 뒤, 별도로 진행하세요)
 -- =============================================================
 -- 1. Supabase 대시보드 > Authentication > Users > Add user 에서

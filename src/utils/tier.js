@@ -2,12 +2,14 @@ import { calcOvr } from './calcOvr'
 
 export const TIER_ORDER = ['S', 'A', 'B', 'C', 'D']
 
-export const TIER_LABELS = {
-  S: 'S 티어',
-  A: 'A 티어',
-  B: 'B 티어',
-  C: 'C 티어',
-  D: 'D 티어',
+// S~D 알파벳 등급이 "성적표"처럼 느껴져서 위계감/박탈감을 준다는 의견이 있어,
+// 게임 카드 등급 느낌의 이름으로 화면에는 이렇게만 보여줌 (내부 데이터는 그대로 S~D 유지)
+export const TIER_NAMES = {
+  S: 'MYTHIC',
+  A: 'LEGEND',
+  B: 'HERO',
+  C: 'KNIGHT',
+  D: 'ROOKIE',
 }
 
 // 종합 점수(OVR) 높은 순. 수동 등수는 더 이상 쓰지 않음

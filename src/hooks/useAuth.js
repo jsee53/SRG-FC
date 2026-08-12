@@ -7,6 +7,7 @@ export function useAuth() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [canManageEvents, setCanManageEvents] = useState(false)
   const [canPostNotice, setCanPostNotice] = useState(false)
+  const [canManageStats, setCanManageStats] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -28,6 +29,7 @@ export function useAuth() {
       setIsAdmin(false)
       setCanManageEvents(false)
       setCanPostNotice(false)
+      setCanManageStats(false)
       return
     }
 
@@ -57,6 +59,15 @@ export function useAuth() {
       .maybeSingle()
       .then(({ data }) => {
         if (!cancelled) setCanPostNotice(Boolean(data))
+      })
+
+    supabase
+      .from('stats_managers')
+      .select('user_id')
+      .eq('user_id', session.user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setCanManageStats(Boolean(data))
       })
 
     return () => {
@@ -92,6 +103,7 @@ export function useAuth() {
     isAdmin,
     canManageEvents: isAdmin || canManageEvents,
     canPostNotice: isAdmin || canPostNotice,
+    canManageStats: isAdmin || canManageStats,
     signIn,
     signUp,
     signOut,

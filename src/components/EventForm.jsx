@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { inputClass, Select } from './memberFormFields'
 import { TIME_OPTIONS, toHHMM } from '../utils/time'
-import { TIER_ORDER } from '../utils/tier'
+import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import AttendeeChip from './AttendeeChip'
 
@@ -160,7 +160,7 @@ export default function EventForm({ members, event, onClose, onSubmit }) {
                 <Select value={extraTier} onChange={(e) => setExtraTier(e.target.value)}>
                   {TIER_ORDER.map((t) => (
                     <option key={t} value={t}>
-                      {t}
+                      {TIER_NAMES[t]}
                     </option>
                   ))}
                 </Select>
@@ -182,7 +182,7 @@ export default function EventForm({ members, event, onClose, onSubmit }) {
                     onClick={() => removeExtra(i)}
                     className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs text-emerald-300 ring-1 ring-emerald-400/50"
                   >
-                    {extra.name} ({extra.tier}) ✕
+                    {extra.name} ({TIER_NAMES[extra.tier]}) ✕
                   </button>
                 ))}
               </div>
