@@ -1,4 +1,4 @@
-import { TIER_ORDER, TIER_LABELS, compareByTierRank } from '../utils/tier'
+import { TIER_ORDER, TIER_LABELS, compareByOvr } from '../utils/tier'
 import MemberCard from './MemberCard'
 
 function EmptyState() {
@@ -12,7 +12,7 @@ export default function RankingList({ members, filter, sortBy, selectedId, aceId
   if (sortBy === 'tier') {
     const groups = TIER_ORDER.map((tier) => ({
       tier,
-      members: filtered.filter((m) => m.tier === tier).sort(compareByTierRank),
+      members: filtered.filter((m) => m.tier === tier).sort(compareByOvr),
     })).filter((group) => group.members.length > 0)
 
     return (
@@ -38,7 +38,7 @@ export default function RankingList({ members, filter, sortBy, selectedId, aceId
     )
   }
 
-  const sorted = [...filtered].sort(compareByTierRank)
+  const sorted = [...filtered].sort(compareByOvr)
 
   return (
     <div className="flex flex-col gap-3 px-4 pb-6">

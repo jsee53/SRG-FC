@@ -29,7 +29,7 @@ export default function MemberCard({ member, rank, active, isAce, onClick }) {
             {rank}
           </div>
         )}
-        <Avatar name={member.name} photo={member.photo} size="md" />
+        <Avatar name={member.name} size="md" />
         <div className="min-w-0 flex-1">
           {(member.role || isAce) && (
             <div className="mb-0.5 flex gap-1">

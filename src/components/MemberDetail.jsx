@@ -24,7 +24,19 @@ function NavArrow({ side, onClick, disabled, children }) {
   )
 }
 
-export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev, onNext, isAce, isAdmin, onEdit }) {
+export default function MemberDetail({
+  member,
+  onClose,
+  hasPrev,
+  hasNext,
+  onPrev,
+  onNext,
+  isAce,
+  isAdmin,
+  onEdit,
+  attendanceCount,
+  bestPlayerCount,
+}) {
   const touchStart = useRef(null)
   const [direction, setDirection] = useState('next')
 
@@ -34,6 +46,7 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
   const meta = [member.positions.join('/'), `${calcAge(member.birthYear)}세`, `OVR ${ovr}`]
     .filter(Boolean)
     .join(' · ')
+  const activityMeta = [`참석 ${attendanceCount ?? 0}회`, `POM ${bestPlayerCount ?? 0}회`].join(' · ')
 
   function goPrev() {
     setDirection('prev')
@@ -105,7 +118,7 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
           className={direction === 'next' ? '[animation:slide-next-in_0.55s_cubic-bezier(0.22,1,0.36,1)]' : '[animation:slide-prev-in_0.55s_cubic-bezier(0.22,1,0.36,1)]'}
         >
           <div className="mt-2 flex items-center gap-4">
-            <Avatar name={member.name} photo={member.photo} size="lg" />
+            <Avatar name={member.name} size="lg" />
             <div>
               {(member.role || isAce) && (
                 <div className="mb-1 flex gap-1">
@@ -129,6 +142,7 @@ export default function MemberDetail({ member, onClose, hasPrev, hasNext, onPrev
                 <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>{member.tier}</span>
               </div>
               <p className="mt-0.5 text-sm text-slate-400">{meta}</p>
+              <p className="mt-0.5 text-sm text-slate-400">{activityMeta}</p>
             </div>
           </div>
 

@@ -14,7 +14,7 @@ export default function AttendeeChip({ member, selected, onToggle }) {
           : 'bg-slate-800/60 ring-1 ring-white/10 hover:-translate-y-0.5 hover:ring-white/30'
       }`}
     >
-      <Avatar name={member.name} photo={member.photo} size="sm" />
+      <Avatar name={member.name} size="sm" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1">
           <span className={`truncate text-sm font-medium ${selected ? 'text-emerald-300' : ''}`}>

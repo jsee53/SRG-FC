@@ -4,33 +4,21 @@ import { TIER_ORDER } from '../utils/tier'
 import { ROLE_LABELS } from '../utils/roles'
 import { Field, inputClass, MemberBasicFields, Select } from './memberFormFields'
 
-export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
+const EMPTY_STATS = Object.fromEntries(Object.keys(STAT_LABELS).map((key) => [key, 60]))
+
+export default function AddMemberForm({ onClose, onAdd }) {
   const [form, setForm] = useState({
-    name: member.name,
-    number: member.number ?? '',
-    birthYear: member.birthYear,
-    positions: member.positions,
-    tier: member.tier,
-    intro: member.intro ?? '',
-    role: member.role ?? '',
-    stats: { ...member.stats },
+    name: '',
+    number: '',
+    birthYear: '',
+    positions: [],
+    tier: TIER_ORDER[TIER_ORDER.length - 1],
+    intro: '',
+    role: '',
+    stats: { ...EMPTY_STATS },
   })
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-
-  async function handleDelete() {
-    if (!window.confirm(`${member.name}님을 랭킹에서 완전히 삭제할까요? 되돌릴 수 없어요.`)) return
-    setDeleting(true)
-    setError('')
-    const { error: deleteError } = await onDelete(member.id)
-    setDeleting(false)
-    if (deleteError) {
-      setError('삭제에 실패했어요. 다시 시도해주세요.')
-      return
-    }
-    onClose()
-  }
 
   function updateStat(key, value) {
     setForm((prev) => ({ ...prev, stats: { ...prev.stats, [key]: Number(value) } }))
@@ -41,7 +29,7 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
     setSubmitting(true)
     setError('')
 
-    const { error: saveError } = await onSave(member.id, {
+    const { error: addError } = await onAdd({
       name: form.name,
       number: form.number === '' ? null : Number(form.number),
       birthYear: Number(form.birthYear),
@@ -53,8 +41,8 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
     })
 
     setSubmitting(false)
-    if (saveError) {
-      setError('저장에 실패했어요. 다시 시도해주세요.')
+    if (addError) {
+      setError('추가에 실패했어요. 다시 시도해주세요.')
       return
     }
     onClose()
@@ -70,7 +58,7 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">{member.name} 정보 수정</h2>
+          <h2 className="text-lg font-bold">새 멤버 추가</h2>
           <button
             type="button"
             onClick={onClose}
@@ -139,16 +127,7 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
             disabled={submitting}
             className="mt-1 rounded-full bg-emerald-400 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
           >
-            {submitting ? '저장 중...' : '저장'}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="rounded-full bg-white/10 py-2 text-sm text-red-400 transition-colors hover:bg-red-400/20 disabled:opacity-40"
-          >
-            {deleting ? '삭제 중...' : '멤버 삭제'}
+            {submitting ? '추가 중...' : '추가'}
           </button>
         </form>
       </div>

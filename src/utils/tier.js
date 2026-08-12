@@ -1,3 +1,5 @@
+import { calcOvr } from './calcOvr'
+
 export const TIER_ORDER = ['S', 'A', 'B', 'C', 'D']
 
 export const TIER_LABELS = {
@@ -8,16 +10,9 @@ export const TIER_LABELS = {
   D: 'D 티어',
 }
 
-export function tierIndex(tier) {
-  const index = TIER_ORDER.indexOf(tier)
-  return index === -1 ? TIER_ORDER.length : index
-}
-
-// 같은 티어 안에서는 수동으로 매긴 등수(낮을수록 상위)로 순서를 가림
-export function compareByTierRank(a, b) {
-  const tierDiff = tierIndex(a.tier) - tierIndex(b.tier)
-  if (tierDiff !== 0) return tierDiff
-  return (a.rank ?? 0) - (b.rank ?? 0)
+// 종합 점수(OVR) 높은 순. 수동 등수는 더 이상 쓰지 않음
+export function compareByOvr(a, b) {
+  return calcOvr(b) - calcOvr(a)
 }
 
 export function filterMembers(members, filter) {
@@ -27,7 +22,7 @@ export function filterMembers(members, filter) {
 // 필터/정렬 모드와 무관하게 화면에 보이는 순서를 그대로 펼친 배열 (상세보기 이전/다음 이동에 사용)
 export function sortMembersFlat(members, sortBy) {
   if (sortBy === 'tier') {
-    return TIER_ORDER.flatMap((tier) => members.filter((m) => m.tier === tier).sort(compareByTierRank))
+    return TIER_ORDER.flatMap((tier) => members.filter((m) => m.tier === tier).sort(compareByOvr))
   }
-  return [...members].sort(compareByTierRank)
+  return [...members].sort(compareByOvr)
 }

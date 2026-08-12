@@ -1,9 +1,12 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { buildBalancedTeams } from '../utils/teamBuilder'
 import AttendeeChip from '../components/AttendeeChip'
 import MercenaryForm from '../components/MercenaryForm'
 import TeamSettings from '../components/TeamSettings'
 import TeamResultCard from '../components/TeamResultCard'
+import TeamResultSkeleton from '../components/TeamResultSkeleton'
+
+const GENERATE_DELAY_MS = 500
 
 export default function TeamBuilderPage({ members }) {
   const [attendingIds, setAttendingIds] = useState(new Set())
@@ -11,8 +14,13 @@ export default function TeamBuilderPage({ members }) {
   const [teamCount, setTeamCount] = useState(3)
   const [teamSize, setTeamSize] = useState(6)
   const [teams, setTeams] = useState(null)
+  const [isGenerating, setIsGenerating] = useState(false)
   const mercIdRef = useRef(0)
+  const timeoutRef = useRef(null)
 
+  useEffect(() => () => clearTimeout(timeoutRef.current), [])
+
+  const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name, 'ko'))
   const attendingMembers = members.filter((m) => attendingIds.has(m.id))
   const totalAttendees = attendingMembers.length + mercenaries.length
   const canGenerate = totalAttendees >= teamCount
@@ -38,7 +46,11 @@ export default function TeamBuilderPage({ members }) {
   }
 
   function handleGenerate() {
-    setTeams(buildBalancedTeams([...attendingMembers, ...mercenaries], teamCount))
+    setIsGenerating(true)
+    timeoutRef.current = setTimeout(() => {
+      setTeams(buildBalancedTeams([...attendingMembers, ...mercenaries], teamCount))
+      setIsGenerating(false)
+    }, GENERATE_DELAY_MS)
   }
 
   return (
@@ -46,7 +58,7 @@ export default function TeamBuilderPage({ members }) {
       <div className="px-4 py-3">
         <h2 className="mb-2 text-sm font-semibold text-slate-300">참석자 선택 ({totalAttendees}명)</h2>
         <div className="grid grid-cols-2 gap-2">
-          {members.map((member) => (
+          {sortedMembers.map((member) => (
             <AttendeeChip
               key={member.id}
               member={member}
@@ -66,7 +78,7 @@ export default function TeamBuilderPage({ members }) {
         onTeamSizeChange={setTeamSize}
       />
 
-      {!teams && (
+      {!teams && !isGenerating && (
         <div className="px-4 pb-3">
           <div className="flex items-center gap-3">
             <button
@@ -85,7 +97,15 @@ export default function TeamBuilderPage({ members }) {
         </div>
       )}
 
-      {teams && (
+      {isGenerating && (
+        <div className="flex flex-col gap-3 px-4 pb-6">
+          {Array.from({ length: teamCount }).map((_, i) => (
+            <TeamResultSkeleton key={i} rows={Math.ceil(totalAttendees / teamCount)} />
+          ))}
+        </div>
+      )}
+
+      {teams && !isGenerating && (
         <div className="flex flex-col gap-3 px-4 pb-6">
           {teams.map((team, i) => (
             <TeamResultCard key={i} index={i} team={team} />
