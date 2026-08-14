@@ -51,13 +51,12 @@ export default function EventCard({
   }
 
   return (
-    <div className="rounded-2xl bg-slate-800/60 p-4 ring-1 ring-white/10">
+    <div
+      className="rounded-2xl bg-slate-800/60 p-4 ring-1 ring-white/10"
+      onClick={() => setExpanded((v) => !v)}
+    >
       <div className="flex items-start justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="flex-1 text-left"
-        >
+        <div className="flex-1 text-left">
           <div className="flex items-center gap-2">
             <p className="font-semibold text-white">{formatDate(event.eventDate)}</p>
             {event.confirmed && (
@@ -71,36 +70,44 @@ export default function EventCard({
             {event.location && `${event.location} · `}참석자 {rosterCount}명
             {mercCount > 0 && ` + 용병 ${mercCount}명`}
           </p>
-        </button>
+        </div>
 
         <div className="flex flex-none items-center gap-2 text-xs">
           {canManageEvents && (
             <>
-              <button type="button" onClick={() => onEdit(event)} className="text-slate-400 hover:text-white">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onEdit(event)
+                }}
+                className="text-slate-400 hover:text-white"
+              >
                 수정
               </button>
-              <button type="button" onClick={() => onDelete(event.id)} className="text-slate-500 hover:text-red-400">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(event.id)
+                }}
+                className="text-slate-500 hover:text-red-400"
+              >
                 삭제
               </button>
             </>
           )}
-          <button type="button" onClick={() => setExpanded((v) => !v)} className="text-slate-500">
-            {expanded ? '▲' : '▼'}
-          </button>
+          <span className="text-slate-500">{expanded ? '▲' : '▼'}</span>
         </div>
       </div>
 
       {expanded && (
         <>
-          <button
-            type="button"
-            onClick={() => setExpanded(false)}
-            className="mt-3 w-full text-left text-sm text-slate-300"
-          >
+          <p className="mt-3 text-sm text-slate-300">
             {event.attendees.length > 0 ? event.attendees.map((a) => a.name).join(', ') : '참석자 없음'}
-          </button>
+          </p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
             {isAdmin && (
               <button
                 type="button"
@@ -138,14 +145,16 @@ export default function EventCard({
 
           {resetError && <p className="mt-1 text-xs text-red-400">{resetError}</p>}
 
-          <EventTeams
-            event={event}
-            myMemberId={myMemberId}
-            voterId={session?.user?.id}
-            votes={votes}
-            onCastVote={onCastVote}
-            onRetractVote={onRetractVote}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <EventTeams
+              event={event}
+              myMemberId={myMemberId}
+              voterId={session?.user?.id}
+              votes={votes}
+              onCastVote={onCastVote}
+              onRetractVote={onRetractVote}
+            />
+          </div>
         </>
       )}
     </div>
