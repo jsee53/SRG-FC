@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import RankingPage from './pages/RankingPage'
 import TeamBuilderPage from './pages/TeamBuilderPage'
 import BoardPage from './pages/BoardPage'
@@ -121,9 +121,48 @@ function App() {
   const myMember = session ? members.find((m) => m.userId === session.user.id) : null
   const unclaimedMembers = members.filter((m) => !m.userId)
 
+  // 랭킹/팀 짜기/게시판/일정 탭을 좌우 스와이프로도 넘길 수 있게 함.
+  // 스크롤이 긴 페이지(게시판/일정)에서는 세로로 긴 드래그 중 손이 살짝 옆으로 흔들리기만 해도
+  // 가로 스와이프로 오판(또는 반대로 누락)하기 쉬워서, 이동 초반(10px)에 방향을 먼저 정하고
+  // 그 뒤로는 그 방향을 고정해서 판정함
+  const pageTouchStart = useRef(null)
+  const pageSwipeAxis = useRef(null)
+  const pageIndex = TABS.findIndex((tab) => tab.key === page)
+
+  function handlePageTouchStart(e) {
+    const t = e.touches[0]
+    pageTouchStart.current = { x: t.clientX, y: t.clientY }
+    pageSwipeAxis.current = null
+  }
+
+  function handlePageTouchMove(e) {
+    if (!pageTouchStart.current || pageSwipeAxis.current) return
+    const t = e.touches[0]
+    const dx = t.clientX - pageTouchStart.current.x
+    const dy = t.clientY - pageTouchStart.current.y
+    if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
+    pageSwipeAxis.current = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
+  }
+
+  function handlePageTouchEnd(e) {
+    if (!pageTouchStart.current) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - pageTouchStart.current.x
+    const wasHorizontal = pageSwipeAxis.current === 'horizontal'
+    pageTouchStart.current = null
+    pageSwipeAxis.current = null
+
+    if (!wasHorizontal || Math.abs(dx) < 60) return
+
+    const nextIndex = dx < 0 ? pageIndex + 1 : pageIndex - 1
+    if (nextIndex >= 0 && nextIndex < TABS.length) {
+      setPage(TABS[nextIndex].key)
+    }
+  }
+
   return (
-    <div className="mx-auto min-h-screen max-w-md bg-slate-900 text-white">
-      <header className="flex items-center gap-3 px-4 pt-6 pb-2">
+    <div className="mx-auto flex h-screen max-w-md flex-col bg-slate-900 text-white">
+      <header className="flex flex-none items-center gap-3 px-4 pt-6 pb-2">
         <img
           src={`${import.meta.env.BASE_URL}emblem.png`}
           alt="SRG-FC 엠블럼"
@@ -153,14 +192,16 @@ function App() {
         )}
       </header>
 
-      <nav className="flex gap-2 px-4 pb-2">
+      <nav className="flex flex-none border-b border-white/10 px-4 pt-2">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             type="button"
             onClick={() => setPage(tab.key)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              page === tab.key ? 'bg-emerald-400 text-emerald-950' : 'bg-white/10 text-slate-300 hover:bg-white/20'
+            className={`flex-1 border-b-2 pb-2 text-sm font-semibold transition-colors ${
+              page === tab.key
+                ? 'border-emerald-400 text-white'
+                : 'border-transparent text-slate-500 hover:text-slate-300'
             }`}
           >
             {tab.label}
@@ -172,55 +213,63 @@ function App() {
       {showError && <p className="px-4 py-16 text-center text-red-400">멤버 정보를 불러오지 못했어요. 새로고침 해주세요.</p>}
 
       {!showLoader && !showError && (
-        <>
-          <div className={page === 'ranking' ? '' : 'hidden'}>
-            <RankingPage
-              members={members}
-              isAdmin={isAdmin}
-              canManageStats={canManageStats}
-              onSaveMember={updateMember}
-              onAddMember={addMember}
-              onDeleteMember={deleteMember}
-              onSaveMemberStats={updateMemberStats}
-              attendanceCountByMemberId={attendanceCountByMemberId}
-              bestPlayerCountByMemberId={bestPlayerCountByMemberId}
-            />
+        <div className="flex-1 overflow-hidden">
+          <div
+            className="flex h-full transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(-${pageIndex * 100}%)` }}
+            onTouchStart={handlePageTouchStart}
+            onTouchMove={handlePageTouchMove}
+            onTouchEnd={handlePageTouchEnd}
+          >
+            <div data-scroll-page className="h-full w-full flex-none overflow-y-auto">
+              <RankingPage
+                members={members}
+                isAdmin={isAdmin}
+                canManageStats={canManageStats}
+                onSaveMember={updateMember}
+                onAddMember={addMember}
+                onDeleteMember={deleteMember}
+                onSaveMemberStats={updateMemberStats}
+                attendanceCountByMemberId={attendanceCountByMemberId}
+                bestPlayerCountByMemberId={bestPlayerCountByMemberId}
+              />
+            </div>
+            <div data-scroll-page className="h-full w-full flex-none overflow-y-auto">
+              <TeamBuilderPage members={members} />
+            </div>
+            <div data-scroll-page className="h-full w-full flex-none overflow-y-auto">
+              <BoardPage
+                members={members}
+                session={session}
+                isAdmin={isAdmin}
+                canPostNotice={canPostNotice}
+                onRequireLogin={() => setShowAuth(true)}
+              />
+            </div>
+            <div data-scroll-page className="h-full w-full flex-none overflow-y-auto">
+              <SchedulePage
+                members={members}
+                session={session}
+                myMemberId={myMember?.id}
+                isAdmin={isAdmin}
+                canManageEvents={canManageEvents}
+                events={events}
+                loading={eventsLoading}
+                error={eventsError}
+                votes={votes}
+                locations={eventLocations}
+                onCreateEvent={createEventAndRefetchLocations}
+                onUpdateEvent={updateEventAndRefetchLocations}
+                onDeleteEvent={deleteEvent}
+                onSetEventConfirmed={setEventConfirmed}
+                onSaveEventTeams={saveEventTeams}
+                onResetEventTeams={resetEventTeams}
+                onCastVote={castVote}
+                onRetractVote={retractVote}
+              />
+            </div>
           </div>
-          <div className={page === 'teams' ? '' : 'hidden'}>
-            <TeamBuilderPage members={members} />
-          </div>
-          <div className={page === 'board' ? '' : 'hidden'}>
-            <BoardPage
-              members={members}
-              session={session}
-              isAdmin={isAdmin}
-              canPostNotice={canPostNotice}
-              onRequireLogin={() => setShowAuth(true)}
-            />
-          </div>
-          <div className={page === 'schedule' ? '' : 'hidden'}>
-            <SchedulePage
-              members={members}
-              session={session}
-              myMemberId={myMember?.id}
-              isAdmin={isAdmin}
-              canManageEvents={canManageEvents}
-              events={events}
-              loading={eventsLoading}
-              error={eventsError}
-              votes={votes}
-              locations={eventLocations}
-              onCreateEvent={createEventAndRefetchLocations}
-              onUpdateEvent={updateEventAndRefetchLocations}
-              onDeleteEvent={deleteEvent}
-              onSetEventConfirmed={setEventConfirmed}
-              onSaveEventTeams={saveEventTeams}
-              onResetEventTeams={resetEventTeams}
-              onCastVote={castVote}
-              onRetractVote={retractVote}
-            />
-          </div>
-        </>
+        </div>
       )}
 
       {showAuth && (
