@@ -43,7 +43,12 @@ export default function MemberDetail({
 }) {
   const touchStart = useRef(null)
   const sheetRef = useRef(null)
+  const [direction, setDirection] = useState('next')
   const [closing, setClosing] = useState(false)
+  // 렌더 중간에 ref를 직접 mutate하면 StrictMode의 이중 렌더 때문에 값이 꼬여서
+  // (React 공식 문서의 "이전 렌더 값 저장하기" 패턴처럼) state로 안전하게 추적함
+  const [prevMemberId, setPrevMemberId] = useState(null)
+  const [isNavigating, setIsNavigating] = useState(false)
 
   useLockBodyScroll(Boolean(member))
 
@@ -53,7 +58,18 @@ export default function MemberDetail({
     if (member) setClosing(false)
   }, [member])
 
-  if (!member) return null
+  if (!member) {
+    // 모달이 닫힌 상태 — 다음 번 열릴 때 "처음 여는 것"으로 인식하도록 초기화
+    if (prevMemberId !== null) setPrevMemberId(null)
+    return null
+  }
+  // 모달이 처음 열리는 순간(이전 멤버가 없었음)엔 좌우 슬라이드 애니메이션을 주지 않음.
+  // 모달 시트 자체가 아래→위로 올라오는 중인데 내용까지 좌우로 같이 움직이면 어색해 보이기 때문.
+  // 이전/다음으로 넘길 때(멤버 → 다른 멤버)만 좌우 슬라이드를 적용함
+  if (member.id !== prevMemberId) {
+    setIsNavigating(prevMemberId !== null)
+    setPrevMemberId(member.id)
+  }
   const tier = TIER_STYLES[member.tier] ?? TIER_STYLES.D
   const ovr = calcOvr(member)
   const meta = [member.positions.join('/'), `${calcAge(member.birthYear)}세`, `OVR ${ovr}`]
@@ -62,10 +78,12 @@ export default function MemberDetail({
   const activityMeta = [`참석 ${attendanceCount ?? 0}회`, `POM ${bestPlayerCount ?? 0}회`].join(' · ')
 
   function goPrev() {
+    setDirection('prev')
     onPrev?.()
   }
 
   function goNext() {
+    setDirection('next')
     onNext?.()
   }
 
@@ -167,10 +185,16 @@ export default function MemberDetail({
           </button>
         </div>
 
-        {/* 이전엔 멤버 전환 시 좌우 슬라이드 애니메이션(slide-next-in/prev-in)을 줬는데,
-            그 안의 RadarChart(SVG scale 애니메이션)와 겹쳐서 저사양 모바일/인앱 브라우저에서
-            버벅이며 어긋나 보이는 문제가 반복돼서, 신뢰성을 위해 애니메이션 없이 즉시 전환하도록 함 */}
-        <div key={member.id}>
+        <div
+          key={member.id}
+          className={
+            !isNavigating
+              ? ''
+              : direction === 'next'
+                ? '[animation:slide-next-in_0.5s_cubic-bezier(0.22,1,0.36,1)]'
+                : '[animation:slide-prev-in_0.5s_cubic-bezier(0.22,1,0.36,1)]'
+          }
+        >
           <div className="mt-2 flex items-center gap-4">
             <Avatar name={member.name} size="lg" />
             <div>

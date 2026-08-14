@@ -40,7 +40,7 @@ export default function RadarChart({ stats, color = '#34d399' }) {
         stroke={color}
         strokeWidth="2"
         style={{ transformOrigin: `${CENTER}px ${CENTER}px` }}
-        className="[animation:radar-in_0.5s_ease-out]"
+        className="[animation:radar-in_0.35s_ease-out]"
       />
       {AXES.map((key, i) => {
         const [x, y] = pointAt(i, RADIUS + 24)
