@@ -13,6 +13,7 @@ export default function SchedulePage({
   loading,
   error,
   votes,
+  locations,
   onCreateEvent,
   onUpdateEvent,
   onDeleteEvent,
@@ -76,17 +77,23 @@ export default function SchedulePage({
       {showForm && (
         <EventForm
           members={members}
+          locations={locations}
           onClose={() => setShowForm(false)}
-          onSubmit={(date, start, end, attendees) => onCreateEvent(session, date, start, end, attendees)}
+          onSubmit={(date, start, end, location, attendees) =>
+            onCreateEvent(session, date, start, end, location, attendees)
+          }
         />
       )}
 
       {editingEvent && (
         <EventForm
           members={members}
+          locations={locations}
           event={editingEvent}
           onClose={() => setEditingEvent(null)}
-          onSubmit={(date, start, end, attendees) => onUpdateEvent(editingEvent.id, date, start, end, attendees)}
+          onSubmit={(date, start, end, location, attendees) =>
+            onUpdateEvent(editingEvent.id, date, start, end, location, attendees)
+          }
         />
       )}
 

@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { inputClass, Select } from './memberFormFields'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
+import { useDismissAnimation } from '../hooks/useDismissAnimation'
+import { useSwipeToClose } from '../hooks/useSwipeToClose'
 
 export const PENDING_CLAIM_KEY = 'srgfc_pending_claim'
 
@@ -19,6 +21,9 @@ function describeSignUpError(signUpError) {
 
 export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
   useLockBodyScroll()
+  const { closing, requestClose } = useDismissAnimation(onClose)
+  const sheetRef = useRef(null)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -45,7 +50,7 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
       setError('이메일 또는 비밀번호가 올바르지 않아요.')
       return
     }
-    onClose()
+    requestClose()
   }
 
   async function handleSignUp(e) {
@@ -67,7 +72,7 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
     }
 
     if (session) {
-      onClose()
+      requestClose()
       return
     }
 
@@ -76,17 +81,27 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 [animation:overlay-in_0.15s_ease-out]"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+        closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
+      }`}
+      onClick={requestClose}
     >
       <div
-        className="w-full max-w-md rounded-t-3xl bg-slate-800 p-5 pb-8 [animation:sheet-in_0.2s_ease-out]"
+        ref={sheetRef}
+        className={`w-full max-w-md rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+          closing
+            ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
+            : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
+        }`}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="flex justify-end">
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
           >
             닫기

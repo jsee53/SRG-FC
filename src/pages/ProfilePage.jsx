@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { MemberBasicFields, Select } from '../components/memberFormFields'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
+import { useDismissAnimation } from '../hooks/useDismissAnimation'
+import { useSwipeToClose } from '../hooks/useSwipeToClose'
 
 export default function ProfilePage({
   session,
@@ -14,6 +16,9 @@ export default function ProfilePage({
   onOpenAdmin,
 }) {
   useLockBodyScroll()
+  const { closing, requestClose } = useDismissAnimation(onClose)
+  const sheetRef = useRef(null)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
   const [form, setForm] = useState(
     member
       ? {
@@ -43,7 +48,7 @@ export default function ProfilePage({
       setError('저장에 실패했어요. 다시 시도해주세요.')
       return
     }
-    onClose()
+    requestClose()
   }
 
   async function handleClaim(e) {
@@ -59,23 +64,33 @@ export default function ProfilePage({
       setError('연결에 실패했어요. 이미 다른 계정이 선택했을 수 있어요.')
       return
     }
-    onClose()
+    requestClose()
   }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 [animation:overlay-in_0.15s_ease-out]"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+        closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
+      }`}
+      onClick={requestClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 [animation:sheet-in_0.2s_ease-out]"
+        ref={sheetRef}
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+          closing
+            ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
+            : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
+        }`}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">내 정보</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
           >
             닫기

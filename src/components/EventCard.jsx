@@ -67,7 +67,8 @@ export default function EventCard({
             )}
           </div>
           <p className="mt-0.5 text-xs text-slate-400">
-            {timeRange && `${timeRange} · `}참석자 {rosterCount}명
+            {timeRange && `${timeRange} · `}
+            {event.location && `${event.location} · `}참석자 {rosterCount}명
             {mercCount > 0 && ` + 용병 ${mercCount}명`}
           </p>
         </button>
@@ -91,9 +92,13 @@ export default function EventCard({
 
       {expanded && (
         <>
-          <p className="mt-3 text-sm text-slate-300">
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="mt-3 w-full text-left text-sm text-slate-300"
+          >
             {event.attendees.length > 0 ? event.attendees.map((a) => a.name).join(', ') : '참석자 없음'}
-          </p>
+          </button>
 
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {isAdmin && (

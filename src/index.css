@@ -28,14 +28,17 @@ select option {
   to { opacity: 0; }
 }
 
+/* %가 아니라 vh를 쓰는 이유: 시트 높이가 짧으면(로그인 폼 등) translateY(100%)의 실제 이동 거리가
+   너무 작아져서 슬라이드 효과가 거의 안 보임. vh는 시트 내용과 무관하게 항상 화면 전체 높이만큼 움직여서
+   모든 모달에서 "화면 아래에서 확실히 올라오고/내려가는" 느낌이 일정하게 나오게 함 */
 @keyframes sheet-in {
-  from { transform: translateY(24px); opacity: 0; }
+  from { transform: translateY(100vh); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
 @keyframes sheet-out {
   from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(100vh); opacity: 0; }
 }
 
 @keyframes radar-in {

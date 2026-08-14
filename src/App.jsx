@@ -9,6 +9,7 @@ import AuthForm, { PENDING_CLAIM_KEY } from './components/AuthForm'
 import { useMembers } from './hooks/useMembers'
 import { useAuth } from './hooks/useAuth'
 import { useEvents } from './hooks/useEvents'
+import { useEventLocations } from './hooks/useEventLocations'
 import { useBestPlayerVotes } from './hooks/useBestPlayerVotes'
 
 const TABS = [
@@ -47,7 +48,20 @@ function App() {
     saveEventTeams,
     resetEventTeams,
   } = useEvents()
+  const { locations: eventLocations, refetchLocations } = useEventLocations()
   const { votes, castVote, retractVote } = useBestPlayerVotes()
+
+  async function createEventAndRefetchLocations(...args) {
+    const result = await createEvent(...args)
+    if (!result.error) await refetchLocations()
+    return result
+  }
+
+  async function updateEventAndRefetchLocations(...args) {
+    const result = await updateEvent(...args)
+    if (!result.error) await refetchLocations()
+    return result
+  }
 
   // 성사된 경기의 참석자만 참석 횟수로 집계 (멤버 규모가 작아 그때그때 계산해도 충분히 가벼움)
   const attendanceCountByMemberId = useMemo(() => {
@@ -195,8 +209,9 @@ function App() {
               loading={eventsLoading}
               error={eventsError}
               votes={votes}
-              onCreateEvent={createEvent}
-              onUpdateEvent={updateEvent}
+              locations={eventLocations}
+              onCreateEvent={createEventAndRefetchLocations}
+              onUpdateEvent={updateEventAndRefetchLocations}
               onDeleteEvent={deleteEvent}
               onSetEventConfirmed={setEventConfirmed}
               onSaveEventTeams={saveEventTeams}
