@@ -84,3 +84,17 @@ select option {
   from { transform: scale(0); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+/* 상세보기에서 이전/다음 선수로 넘길 때만 쓰는 전환 효과.
+   예전엔 훨씬 크게(85%) 움직이고 시간도 길어서(0.55s) RadarChart의 scale 애니메이션과
+   겹쳤을 때 저사양 모바일에서 버벅였음 — 그 문제는 겹치는 애니메이션 자체가 원인이었어서
+   (RadarChart는 이제 별도로 조절), 이동 거리/시간은 다시 넉넉하게 늘려도 괜찮음 */
+@keyframes slide-next-in {
+  from { transform: translateX(72px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-prev-in {
+  from { transform: translateX(-72px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
