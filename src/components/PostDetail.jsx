@@ -6,7 +6,6 @@ import { useDismissAnimation } from '../hooks/useDismissAnimation'
 import { useSwipeToClose } from '../hooks/useSwipeToClose'
 import { inputClass } from './memberFormFields'
 import CommentList from './CommentList'
-import Linkified from './Linkified'
 
 export default function PostDetail({
   post,
@@ -107,9 +106,7 @@ export default function PostDetail({
           </div>
         </div>
 
-        <p className="mt-4 whitespace-pre-wrap text-base text-[var(--color-text-soft)]">
-          <Linkified text={post.content} />
-        </p>
+        <p className="mt-4 whitespace-pre-wrap text-base text-[var(--color-text-soft)]">{post.content}</p>
 
         <button
           type="button"
