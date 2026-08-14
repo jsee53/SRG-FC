@@ -1,4 +1,4 @@
-import { calcOvr } from '../utils/calcOvr'
+﻿import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
 import { TIER_STYLES, STAT_LABELS } from '../utils/tierStyles'
 import { TIER_NAMES } from '../utils/tier'
@@ -16,9 +16,9 @@ export default function MemberCard({ member, rank, active, isAce, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative overflow-hidden rounded-2xl bg-slate-800/60 p-4 text-left ring-1 transition-all hover:-translate-y-0.5 hover:brightness-110 ${
+      className={`relative overflow-hidden rounded-2xl bg-[var(--color-surface)] p-4 text-left ring-1 transition-all hover:-translate-y-0.5 hover:brightness-110 ${
         active
-          ? '-translate-y-1 ring-2 ring-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.25),0_8px_20px_-4px_rgba(52,211,153,0.5)]'
+          ? '-translate-y-1 ring-2 ring-accent-400 shadow-[0_0_0_4px_rgba(52,211,153,0.25),0_8px_20px_-4px_rgba(52,211,153,0.5)]'
           : tier.ring
       }`}
     >
@@ -26,7 +26,7 @@ export default function MemberCard({ member, rank, active, isAce, onClick }) {
 
       <div className="relative flex items-start gap-3">
         {rank != null && (
-          <div className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-white/10 text-sm font-semibold">
+          <div className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--color-surface-soft)] text-sm font-semibold">
             {rank}
           </div>
         )}
@@ -50,26 +50,26 @@ export default function MemberCard({ member, rank, active, isAce, onClick }) {
           )}
           <div className="flex items-center gap-2">
             <span className="truncate font-semibold">{member.name}</span>
-            {member.number != null && <span className="text-sm text-slate-400">No.{member.number}</span>}
+            {member.number != null && <span className="text-sm text-[var(--color-text-muted)]">No.{member.number}</span>}
             <span className={`ml-auto flex-none rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>
               {TIER_NAMES[member.tier]}
             </span>
           </div>
-          <div className="mt-0.5 text-xs text-slate-400">{meta}</div>
+          <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{meta}</div>
         </div>
       </div>
 
       <div className="relative mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
         {Object.entries(STAT_LABELS).map(([key, label]) => (
           <div key={key} className="flex items-center gap-1.5">
-            <span className="w-14 flex-none whitespace-nowrap text-slate-400">{label}</span>
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+            <span className="w-14 flex-none whitespace-nowrap text-[var(--color-text-muted)]">{label}</span>
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--color-surface-soft)]">
               <div
-                className="h-full rounded-full bg-white/70"
+                className="h-full rounded-full bg-[var(--color-surface-strong)]"
                 style={{ width: `${member.stats[key]}%` }}
               />
             </div>
-            <span className="w-5 flex-none text-right text-slate-300">{member.stats[key]}</span>
+            <span className="w-5 flex-none text-right text-[var(--color-text-soft)]">{member.stats[key]}</span>
           </div>
         ))}
       </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { usePosts } from '../hooks/usePosts'
 import { resolveAuthorName } from '../utils/authorName'
 import PostForm from '../components/PostForm'
@@ -29,17 +29,17 @@ export default function BoardPage({ members, session, isAdmin, canPostNotice, on
   return (
     <div className="px-4 pb-6">
       <div className="flex items-center justify-between py-2">
-        <h2 className="text-sm font-semibold text-slate-400">게시판</h2>
+        <h2 className="text-sm font-semibold text-[var(--color-text-muted)]">게시판</h2>
         <button
           type="button"
           onClick={handleWriteClick}
-          className="rounded-full bg-emerald-400 px-3 py-1 text-xs font-semibold text-emerald-950 transition-colors hover:bg-emerald-300"
+          className="rounded-full bg-accent-400 px-3 py-1 text-xs font-semibold text-accent-950 transition-colors hover:bg-accent-300"
         >
           글쓰기
         </button>
       </div>
 
-      {loading && <p className="py-16 text-center text-slate-400">불러오는 중...</p>}
+      {loading && <p className="py-16 text-center text-[var(--color-text-muted)]">불러오는 중...</p>}
       {error && <p className="py-16 text-center text-red-400">게시글을 불러오지 못했어요.</p>}
 
       {!loading && !error && (
@@ -51,26 +51,26 @@ export default function BoardPage({ members, session, isAdmin, canPostNotice, on
               onClick={() => setSelectedPost(post)}
               className={`rounded-2xl p-4 text-left transition-all hover:-translate-y-0.5 hover:brightness-110 ${
                 post.isNotice
-                  ? 'bg-emerald-400/10 ring-2 ring-emerald-400/60 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]'
-                  : 'bg-slate-800/60 ring-1 ring-white/10'
+                  ? 'bg-accent-400/10 ring-2 ring-accent-400/60 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]'
+                  : 'bg-[var(--color-surface)] ring-1 ring-[var(--color-border)]'
               }`}
             >
               <div className="flex items-center gap-2">
                 {post.isNotice && (
-                  <span className="rounded-full bg-emerald-400 px-2 py-0.5 text-[10px] font-bold text-emerald-950">
+                  <span className="rounded-full bg-accent-400 px-2 py-0.5 text-[10px] font-bold text-accent-950">
                     공지
                   </span>
                 )}
-                <p className="font-semibold text-white">{post.title}</p>
+                <p className="font-semibold text-[var(--color-text)]">{post.title}</p>
               </div>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-[var(--color-text-muted)]">
                 {resolveAuthorName(members, post.authorId, post.authorEmail)} ·{' '}
                 {new Date(post.createdAt).toLocaleDateString('ko-KR')} · 댓글 {post.commentCount} · 좋아요{' '}
                 {post.likedUserIds.length}
               </p>
             </button>
           ))}
-          {posts.length === 0 && <p className="py-16 text-center text-slate-400">아직 글이 없어요.</p>}
+          {posts.length === 0 && <p className="py-16 text-center text-[var(--color-text-muted)]">아직 글이 없어요.</p>}
         </div>
       )}
 

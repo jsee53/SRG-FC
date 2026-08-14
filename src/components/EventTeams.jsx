@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 
 function groupByTeam(attendees) {
   const groups = new Map()
@@ -38,8 +38,8 @@ export default function EventTeams({ event, myMemberId, voterId, votes, onCastVo
         const myVote = teamVotes.find((v) => v.voterId === voterId)
 
         return (
-          <div key={teamIndex} className="rounded-xl bg-white/5 p-3">
-            <p className="mb-2 text-xs font-semibold text-slate-300">
+          <div key={teamIndex} className="rounded-xl bg-[var(--color-surface-faint)] p-3">
+            <p className="mb-2 text-xs font-semibold text-[var(--color-text-soft)]">
               {teamIndex + 1}팀 ({attendees.length}명)
             </p>
             <div className="flex flex-col gap-1.5">
@@ -49,7 +49,7 @@ export default function EventTeams({ event, myMemberId, voterId, votes, onCastVo
                 const isSelf = myAttendee != null && attendee.id === myAttendee.id
                 return (
                   <div key={attendee.id} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="text-slate-200">{attendee.name}</span>
+                    <span className="text-[var(--color-text-soft)]">{attendee.name}</span>
                     <div className="flex items-center gap-2">
                       {event.confirmed && voteCount > 0 && (
                         <span className="text-xs text-amber-300">POM {voteCount}표</span>
@@ -62,7 +62,7 @@ export default function EventTeams({ event, myMemberId, voterId, votes, onCastVo
                           className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-40 ${
                             isMyVote
                               ? 'bg-amber-400 text-amber-950'
-                              : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                              : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft-hover)]'
                           }`}
                         >
                           {isMyVote ? '투표 취소' : '투표'}

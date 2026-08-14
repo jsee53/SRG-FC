@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import EventForm from '../components/EventForm'
 import EventCard from '../components/EventCard'
 import EventTeamBuilderModal from '../components/EventTeamBuilderModal'
@@ -35,19 +35,19 @@ export default function SchedulePage({
   return (
     <div className="px-4 pb-6">
       <div className="flex items-center justify-between py-2">
-        <h2 className="text-sm font-semibold text-slate-400">경기 일정</h2>
+        <h2 className="text-sm font-semibold text-[var(--color-text-muted)]">경기 일정</h2>
         {canManageEvents && (
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="rounded-full bg-emerald-400 px-3 py-1 text-xs font-semibold text-emerald-950 transition-colors hover:bg-emerald-300"
+            className="rounded-full bg-accent-400 px-3 py-1 text-xs font-semibold text-accent-950 transition-colors hover:bg-accent-300"
           >
             일정 등록
           </button>
         )}
       </div>
 
-      {loading && <p className="py-16 text-center text-slate-400">불러오는 중...</p>}
+      {loading && <p className="py-16 text-center text-[var(--color-text-muted)]">불러오는 중...</p>}
       {error && <p className="py-16 text-center text-red-400">일정을 불러오지 못했어요.</p>}
 
       {!loading && !error && (
@@ -70,7 +70,7 @@ export default function SchedulePage({
               onRetractVote={onRetractVote}
             />
           ))}
-          {events.length === 0 && <p className="py-16 text-center text-slate-400">등록된 일정이 없어요.</p>}
+          {events.length === 0 && <p className="py-16 text-center text-[var(--color-text-muted)]">등록된 일정이 없어요.</p>}
         </div>
       )}
 

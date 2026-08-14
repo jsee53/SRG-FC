@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import RankingPage from './pages/RankingPage'
 import TeamBuilderPage from './pages/TeamBuilderPage'
 import BoardPage from './pages/BoardPage'
@@ -11,6 +11,7 @@ import { useAuth } from './hooks/useAuth'
 import { useEvents } from './hooks/useEvents'
 import { useEventLocations } from './hooks/useEventLocations'
 import { useBestPlayerVotes } from './hooks/useBestPlayerVotes'
+import { useAccentTheme } from './hooks/useAccentTheme'
 
 const TABS = [
   { key: 'ranking', label: '랭킹' },
@@ -50,6 +51,7 @@ function App() {
   } = useEvents()
   const { locations: eventLocations, refetchLocations } = useEventLocations()
   const { votes, castVote, retractVote } = useBestPlayerVotes()
+  const { theme: accentTheme, changeTheme: changeAccentTheme } = useAccentTheme()
 
   async function createEventAndRefetchLocations(...args) {
     const result = await createEvent(...args)
@@ -161,7 +163,7 @@ function App() {
   }
 
   return (
-    <div className="mx-auto flex h-screen max-w-md flex-col bg-slate-900 text-white">
+    <div className="mx-auto flex h-screen max-w-md flex-col bg-[var(--color-app-bg)] text-[var(--color-text)]">
       <header className="flex flex-none items-center gap-3 px-4 pt-6 pb-2">
         <img
           src={`${import.meta.env.BASE_URL}emblem.png`}
@@ -170,13 +172,13 @@ function App() {
         />
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">SRG-FC</h1>
-          <p className="text-sm text-slate-400">새릉골 풋살 동호회</p>
+          <p className="text-sm text-[var(--color-text-muted)]">새릉골 풋살 동호회</p>
         </div>
         {session ? (
           <button
             type="button"
             onClick={() => setShowProfile(true)}
-            className="flex-none rounded-full bg-white/10 px-3 py-1 text-xs text-slate-300 transition-colors hover:bg-white/20"
+            className="flex-none rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-xs text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)]"
           >
             {myMember ? myMember.name : session.user.email.split('@')[0]}
             {isAdmin ? ' (관리자)' : ''}
@@ -185,14 +187,14 @@ function App() {
           <button
             type="button"
             onClick={() => setShowAuth(true)}
-            className="flex-none rounded-full bg-white/10 px-3 py-1 text-xs text-slate-300 transition-colors hover:bg-white/20"
+            className="flex-none rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-xs text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)]"
           >
             로그인
           </button>
         )}
       </header>
 
-      <nav className="flex flex-none border-b border-white/10 px-4 pt-2">
+      <nav className="flex flex-none border-b border-[var(--color-border)] px-4 pt-2">
         {TABS.map((tab) => (
           <button
             key={tab.key}
@@ -200,8 +202,8 @@ function App() {
             onClick={() => setPage(tab.key)}
             className={`flex-1 border-b-2 pb-2 text-sm font-semibold transition-colors ${
               page === tab.key
-                ? 'border-emerald-400 text-white'
-                : 'border-transparent text-slate-500 hover:text-slate-300'
+                ? 'border-accent-400 text-[var(--color-text)]'
+                : 'border-transparent text-[var(--color-text-faint)] hover:text-[var(--color-text-soft)]'
             }`}
           >
             {tab.label}
@@ -209,19 +211,22 @@ function App() {
         ))}
       </nav>
 
-      {showLoader && <p className="px-4 py-16 text-center text-slate-400">불러오는 중...</p>}
+      {showLoader && <p className="px-4 py-16 text-center text-[var(--color-text-muted)]">불러오는 중...</p>}
       {showError && <p className="px-4 py-16 text-center text-red-400">멤버 정보를 불러오지 못했어요. 새로고침 해주세요.</p>}
 
+      {/* transform은 조상에 걸리면 하위의 position:fixed 모달들이 뷰포트가 아니라
+          이 요소를 기준으로 배치되어버리는 CSS 부작용이 있어서, 슬라이드는 transform이 아니라
+          left로 애니메이션함 (left는 그런 부작용이 없음) */}
       {!showLoader && !showError && (
         <div className="flex-1 overflow-hidden">
           <div
-            className="flex h-full transition-transform duration-300 ease-out"
-            style={{ transform: `translateX(-${pageIndex * 100}%)` }}
+            className="relative flex h-full w-[400%] transition-[left] duration-300 ease-out"
+            style={{ left: `-${pageIndex * 100}%` }}
             onTouchStart={handlePageTouchStart}
             onTouchMove={handlePageTouchMove}
             onTouchEnd={handlePageTouchEnd}
           >
-            <div data-scroll-page className="h-full w-full flex-none overflow-y-auto">
+            <div data-scroll-page className="h-full w-[25%] flex-none overflow-y-auto overscroll-contain">
               <RankingPage
                 members={members}
                 isAdmin={isAdmin}
@@ -234,10 +239,10 @@ function App() {
                 bestPlayerCountByMemberId={bestPlayerCountByMemberId}
               />
             </div>
-            <div data-scroll-page className="h-full w-full flex-none overflow-y-auto">
+            <div data-scroll-page className="h-full w-[25%] flex-none overflow-y-auto overscroll-contain">
               <TeamBuilderPage members={members} />
             </div>
-            <div data-scroll-page className="h-full w-full flex-none overflow-y-auto">
+            <div data-scroll-page className="h-full w-[25%] flex-none overflow-y-auto overscroll-contain">
               <BoardPage
                 members={members}
                 session={session}
@@ -246,7 +251,7 @@ function App() {
                 onRequireLogin={() => setShowAuth(true)}
               />
             </div>
-            <div data-scroll-page className="h-full w-full flex-none overflow-y-auto">
+            <div data-scroll-page className="h-full w-[25%] flex-none overflow-y-auto overscroll-contain">
               <SchedulePage
                 members={members}
                 session={session}
@@ -282,6 +287,8 @@ function App() {
           member={myMember}
           unclaimedMembers={unclaimedMembers}
           isAdmin={isAdmin}
+          accentTheme={accentTheme}
+          onChangeAccentTheme={changeAccentTheme}
           onClose={() => setShowProfile(false)}
           onSave={updateOwnMember}
           onClaim={claimMember}

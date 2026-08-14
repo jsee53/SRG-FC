@@ -1,15 +1,15 @@
-function SegmentGroup({ label, options, value, onChange }) {
+﻿function SegmentGroup({ label, options, value, onChange }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-slate-400">{label}</span>
-      <div className="flex gap-1 rounded-full bg-white/10 p-1">
+      <span className="text-xs text-[var(--color-text-muted)]">{label}</span>
+      <div className="flex gap-1 rounded-full bg-[var(--color-surface-soft)] p-1">
         {options.map((opt) => (
           <button
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              value === opt ? 'bg-emerald-400 text-emerald-950' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+              value === opt ? 'bg-accent-400 text-accent-950' : 'text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft)] hover:text-[var(--color-text)]'
             }`}
           >
             {opt}

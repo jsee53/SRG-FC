@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { inputClass } from './memberFormFields'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import { useDismissAnimation } from '../hooks/useDismissAnimation'
@@ -8,7 +8,7 @@ export default function PostForm({ post, canPostNotice, onClose, onSubmit }) {
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
   const sheetRef = useRef(null)
-  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
   const [title, setTitle] = useState(post?.title ?? '')
   const [content, setContent] = useState(post?.content ?? '')
   const [isNotice, setIsNotice] = useState(post?.isNotice ?? false)
@@ -30,14 +30,14 @@ export default function PostForm({ post, canPostNotice, onClose, onSubmit }) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-backdrop)] ${
         closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
       }`}
       onClick={requestClose}
     >
       <div
         ref={sheetRef}
-        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-[var(--color-sheet)] p-5 pb-8 ${
           closing
             ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
             : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
@@ -46,13 +46,14 @@ export default function PostForm({ post, canPostNotice, onClose, onSubmit }) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{post ? '글 수정' : '글쓰기'}</h2>
           <button
             type="button"
             onClick={requestClose}
-            className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+            className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-sm text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)] hover:text-[var(--color-text)]"
           >
             닫기
           </button>
@@ -76,12 +77,12 @@ export default function PostForm({ post, canPostNotice, onClose, onSubmit }) {
           />
 
           {canPostNotice && (
-            <label className="flex items-center gap-2 text-sm text-slate-300">
+            <label className="flex items-center gap-2 text-sm text-[var(--color-text-soft)]">
               <input
                 type="checkbox"
                 checked={isNotice}
                 onChange={(e) => setIsNotice(e.target.checked)}
-                className="h-4 w-4 rounded accent-emerald-400"
+                className="h-4 w-4 rounded accent-accent-400"
               />
               공지사항으로 등록 (항상 상단에 고정)
             </label>
@@ -92,7 +93,7 @@ export default function PostForm({ post, canPostNotice, onClose, onSubmit }) {
           <button
             type="submit"
             disabled={submitting}
-            className="mt-1 rounded-full bg-emerald-400 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
+            className="mt-1 rounded-full bg-accent-400 py-2.5 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
           >
             {submitting ? (post ? '수정 중...' : '등록 중...') : post ? '수정 완료' : '등록'}
           </button>

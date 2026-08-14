@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 
 function PermissionToggle({ label, active, onToggle, pending }) {
   return (
@@ -7,7 +7,7 @@ function PermissionToggle({ label, active, onToggle, pending }) {
       onClick={onToggle}
       disabled={pending}
       className={`flex-none rounded-full px-3 py-1 text-xs font-medium transition-colors disabled:opacity-40 ${
-        active ? 'bg-emerald-400 text-emerald-950 hover:bg-emerald-300' : 'bg-white/10 text-slate-300 hover:bg-white/20'
+        active ? 'bg-accent-400 text-accent-950 hover:bg-accent-300' : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft-hover)]'
       }`}
     >
       {pending ? '처리 중...' : active ? `${label} 있음` : `${label} 주기`}
@@ -48,17 +48,17 @@ export default function AccountsSection({
 
   return (
     <section>
-      <h3 className="mb-2 text-sm font-semibold text-slate-300">가입 계정 / 권한</h3>
-      {loading && <p className="py-4 text-center text-sm text-slate-400">불러오는 중...</p>}
+      <h3 className="mb-2 text-sm font-semibold text-[var(--color-text-soft)]">가입 계정 / 권한</h3>
+      {loading && <p className="py-4 text-center text-sm text-[var(--color-text-muted)]">불러오는 중...</p>}
       {error && (
         <p className="py-4 text-center text-sm text-red-400">계정 목록을 불러오지 못했어요: {error.message}</p>
       )}
       <div className="flex flex-col gap-2">
         {accounts.map((account) => (
-          <div key={account.userId} className="flex flex-col gap-2 rounded-xl bg-white/5 p-3">
+          <div key={account.userId} className="flex flex-col gap-2 rounded-xl bg-[var(--color-surface-faint)] p-3">
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white">{account.memberName ?? '연결 안 됨'}</p>
-              <p className="truncate text-xs text-slate-400">{account.email}</p>
+              <p className="truncate text-sm font-medium text-[var(--color-text)]">{account.memberName ?? '연결 안 됨'}</p>
+              <p className="truncate text-xs text-[var(--color-text-muted)]">{account.email}</p>
             </div>
             <div className="flex gap-2">
               <PermissionToggle
@@ -83,7 +83,7 @@ export default function AccountsSection({
           </div>
         ))}
         {!loading && !error && accounts.length === 0 && (
-          <p className="py-4 text-center text-sm text-slate-400">가입된 계정이 없어요.</p>
+          <p className="py-4 text-center text-sm text-[var(--color-text-muted)]">가입된 계정이 없어요.</p>
         )}
       </div>
     </section>

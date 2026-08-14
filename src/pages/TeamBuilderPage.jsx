@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { buildBalancedTeams } from '../utils/teamBuilder'
 import AttendeeChip from '../components/AttendeeChip'
 import MercenaryForm from '../components/MercenaryForm'
@@ -56,7 +56,7 @@ export default function TeamBuilderPage({ members }) {
   return (
     <>
       <div className="px-4 py-3">
-        <h2 className="mb-2 text-sm font-semibold text-slate-300">참석자 선택 ({totalAttendees}명)</h2>
+        <h2 className="mb-2 text-sm font-semibold text-[var(--color-text-soft)]">참석자 선택 ({totalAttendees}명)</h2>
         <div className="grid grid-cols-2 gap-2">
           {sortedMembers.map((member) => (
             <AttendeeChip
@@ -85,14 +85,14 @@ export default function TeamBuilderPage({ members }) {
               type="button"
               disabled={!canGenerate}
               onClick={handleGenerate}
-              className="flex-1 rounded-full bg-emerald-400 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40 disabled:hover:bg-emerald-400"
+              className="flex-1 rounded-full bg-accent-400 py-2.5 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40 disabled:hover:bg-accent-400"
             >
               팀 나누기
             </button>
-            <span className="flex-none text-sm text-slate-400">{totalAttendees}명</span>
+            <span className="flex-none text-sm text-[var(--color-text-muted)]">{totalAttendees}명</span>
           </div>
           {!canGenerate && (
-            <p className="mt-1 text-center text-xs text-slate-400">최소 {teamCount}명은 있어야 팀을 나눌 수 있어요.</p>
+            <p className="mt-1 text-center text-xs text-[var(--color-text-muted)]">최소 {teamCount}명은 있어야 팀을 나눌 수 있어요.</p>
           )}
         </div>
       )}
@@ -113,7 +113,7 @@ export default function TeamBuilderPage({ members }) {
           <button
             type="button"
             onClick={handleGenerate}
-            className="rounded-full bg-white/10 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-white/20"
+            className="rounded-full bg-[var(--color-surface-soft)] py-2 text-sm font-medium text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)]"
           >
             다시 나누기
           </button>

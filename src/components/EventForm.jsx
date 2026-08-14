@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { inputClass, Select } from './memberFormFields'
 import { TIME_OPTIONS, toHHMM } from '../utils/time'
 import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
@@ -13,7 +13,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
   const sheetRef = useRef(null)
-  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
   const [eventDate, setEventDate] = useState(event?.eventDate ?? '')
   const [startTime, setStartTime] = useState(toHHMM(event?.startTime))
   const [endTime, setEndTime] = useState(toHHMM(event?.endTime))
@@ -76,14 +76,14 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-backdrop)] ${
         closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
       }`}
       onClick={requestClose}
     >
       <div
         ref={sheetRef}
-        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-[var(--color-sheet)] p-5 pb-8 ${
           closing
             ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
             : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
@@ -92,6 +92,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{event ? '일정 수정' : '일정 등록'}</h2>
@@ -100,14 +101,14 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
               type="submit"
               form="event-form"
               disabled={submitting}
-              className="rounded-full bg-emerald-400 px-3 py-1 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
+              className="rounded-full bg-accent-400 px-3 py-1 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
             >
               {submitting ? '저장 중...' : event ? '수정 완료' : '등록'}
             </button>
             <button
               type="button"
               onClick={requestClose}
-              className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+              className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-sm text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)] hover:text-[var(--color-text)]"
             >
               닫기
             </button>
@@ -115,7 +116,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
         </div>
 
         <form id="event-form" onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
-          <label className="flex flex-col gap-1 text-xs text-slate-400">
+          <label className="flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
             날짜
             <input
               type="date"
@@ -126,7 +127,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-slate-400">
+          <label className="flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
             장소 (선택, 목록에서 고르거나 직접 입력)
             <input
               list="event-location-options"
@@ -143,7 +144,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
           </label>
 
           <div className="grid grid-cols-2 gap-3">
-            <label className="flex flex-col gap-1 text-xs text-slate-400">
+            <label className="flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
               시작 시간 (선택)
               <Select value={startTime} onChange={(e) => setStartTime(e.target.value)}>
                 <option value="">선택 안 함</option>
@@ -154,7 +155,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
                 ))}
               </Select>
             </label>
-            <label className="flex flex-col gap-1 text-xs text-slate-400">
+            <label className="flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
               종료 시간 (선택)
               <Select value={endTime} onChange={(e) => setEndTime(e.target.value)}>
                 <option value="">선택 안 함</option>
@@ -168,7 +169,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
           </div>
 
           <div>
-            <p className="mb-2 text-xs text-slate-400">
+            <p className="mb-2 text-xs text-[var(--color-text-muted)]">
               참석자 선택 ({attendingIds.size}명{extras.length > 0 && ` + 용병 ${extras.length}명`})
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -184,7 +185,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
           </div>
 
           <div>
-            <p className="mb-2 text-xs text-slate-400">용병 추가 (로스터에 없는 참석자)</p>
+            <p className="mb-2 text-xs text-[var(--color-text-muted)]">용병 추가 (로스터에 없는 참석자)</p>
             <div className="flex gap-2">
               <input
                 placeholder="이름"
@@ -210,7 +211,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
               <button
                 type="button"
                 onClick={addExtra}
-                className="flex-none rounded-lg bg-white/10 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:bg-white/20"
+                className="flex-none rounded-lg bg-[var(--color-surface-soft)] px-3 py-1.5 text-sm text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)]"
               >
                 추가
               </button>
@@ -222,7 +223,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
                     key={`${extra.name}-${i}`}
                     type="button"
                     onClick={() => removeExtra(i)}
-                    className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs text-emerald-300 ring-1 ring-emerald-400/50"
+                    className="rounded-full bg-accent-500/20 px-3 py-1 text-xs text-accent-300 ring-1 ring-accent-400/50"
                   >
                     {extra.name} ({TIER_NAMES[extra.tier]}) ✕
                   </button>
@@ -236,7 +237,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
           <button
             type="submit"
             disabled={submitting}
-            className="mt-1 rounded-full bg-emerald-400 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
+            className="mt-1 rounded-full bg-accent-400 py-2.5 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
           >
             {submitting ? '저장 중...' : event ? '수정 완료' : '등록'}
           </button>

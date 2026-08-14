@@ -1,4 +1,4 @@
-const POSITIONS = ['전체', 'GK', 'DF', 'MF', 'FW']
+﻿const POSITIONS = ['전체', 'GK', 'DF', 'MF', 'FW']
 
 export default function PositionTabs({ active, onChange }) {
   return (
@@ -10,8 +10,8 @@ export default function PositionTabs({ active, onChange }) {
           onClick={() => onChange(pos)}
           className={`flex-none rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             active === pos
-              ? 'bg-emerald-400 text-emerald-950'
-              : 'bg-white/10 text-slate-300 hover:bg-white/20'
+              ? 'bg-accent-400 text-accent-950'
+              : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft-hover)]'
           }`}
         >
           {pos}

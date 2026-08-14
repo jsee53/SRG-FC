@@ -1,13 +1,13 @@
-export const POSITION_OPTIONS = ['GK', 'DF', 'MF', 'FW']
+﻿export const POSITION_OPTIONS = ['GK', 'DF', 'MF', 'FW']
 
 // 16px(text-base) 미만이면 iOS/Android가 이 입력칸에 포커스될 때 화면을 자동으로 확대해버려서
 // (그 뒤로 비율이 깨진 것처럼 보임) 최소 16px을 유지해야 함 — text-sm(14px) 쓰지 말 것
 export const inputClass =
-  'rounded-lg bg-white/10 px-2.5 py-1.5 text-base text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400'
+  'rounded-lg bg-[var(--color-surface-soft)] px-2.5 py-1.5 text-base text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-accent-400'
 
 export function Field({ label, children }) {
   return (
-    <label className="flex flex-col gap-1 text-xs text-slate-400">
+    <label className="flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
       {label}
       {children}
     </label>
@@ -22,7 +22,7 @@ export function Select({ className = '', children, ...props }) {
         {children}
       </select>
       <svg
-        className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+        className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-muted)]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -88,7 +88,7 @@ export function MemberBasicFields({ form, setForm, showName = true }) {
               type="button"
               onClick={() => togglePosition(pos)}
               className={`flex-1 rounded-lg py-1.5 text-sm font-medium transition-colors ${
-                form.positions.includes(pos) ? 'bg-emerald-400 text-emerald-950' : 'bg-white/10 text-slate-300'
+                form.positions.includes(pos) ? 'bg-accent-400 text-accent-950' : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)]'
               }`}
             >
               {pos}
