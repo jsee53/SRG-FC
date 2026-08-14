@@ -17,7 +17,7 @@ export default function TeamBuilderPage({ onCandidatesChange }) {
   const attendingMembers = members.filter((m) => attendingIds.has(m.id))
   const totalAttendees = attendingMembers.length + mercenaries.length
   const canGenerate = totalAttendees >= teamCount
-  const candidates = [...attendingMembers, ...mercenaries]
+  const candidates = [...attendingMembers]
 
   useEffect(() => {
     onCandidatesChange?.(candidates)

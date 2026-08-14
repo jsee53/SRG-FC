@@ -45,3 +45,56 @@ npm run dev
 ## 배포
 
 `main`, `jsee53` 브랜치에 push하면 GitHub Actions가 자동으로 빌드하고 GitHub Pages에 배포합니다 (`.github/workflows/deploy.yml`). 저장소 Settings > Pages에서 Source가 "GitHub Actions"로 설정되어 있어야 합니다.
+
+## 물 사올 사람 공유 추천(DB 연동)
+
+기본 동작은 브라우저 로컬 데모 모드입니다. 모든 사용자에게 같은 "오늘 결과"를 보여주려면 API를 연결해야 합니다.
+
+- 환경변수: `VITE_WATER_RUNNER_API_BASE`
+- 예시: `https://your-api.example.com`
+
+프론트는 아래 API를 호출합니다.
+
+1. `GET /water-runner/today?dateKey=YYYY-MM-DD`
+
+```json
+{
+  "record": {
+    "dateKey": "2026-08-14",
+    "winnerId": "8",
+    "winnerName": "박주성",
+    "attendeeIds": ["8", "12", "15"],
+    "createdAt": "2026-08-14T10:05:23.000Z"
+  }
+}
+```
+
+2. `POST /water-runner/draw`
+
+요청:
+
+```json
+{
+  "dateKey": "2026-08-14",
+  "candidates": [
+    { "id": "8", "name": "박주성" },
+    { "id": "12", "name": "김진웅" }
+  ]
+}
+```
+
+응답:
+
+```json
+{
+  "record": {
+    "dateKey": "2026-08-14",
+    "winnerId": "12",
+    "winnerName": "김진웅",
+    "attendeeIds": ["8", "12"],
+    "createdAt": "2026-08-14T10:05:23.000Z"
+  }
+}
+```
+
+DB는 `dateKey`를 unique로 두어 하루 1회만 생성되게 구성하면 됩니다.
