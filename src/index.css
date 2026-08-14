@@ -1,9 +1,48 @@
 @import "tailwindcss";
 
+/* 앱 전체 강조색(브랜드 컬러). 기본값은 기존 emerald 그대로이고, useAccentTheme 훅이
+   런타임에 이 변수들만 덮어써서 색상 테마를 바꿈 (등급 배지 색은 별도라 영향 없음) */
+@theme {
+  --color-accent-200: #a7f3d0;
+  --color-accent-300: #6ee7b7;
+  --color-accent-400: #34d399;
+  --color-accent-500: #10b981;
+  --color-accent-950: #022c22;
+  --color-app-bg: #0f172a;
+}
+
+/* 다크/라이트 모두를 아우르는 회색조 변수들의 기본값(에메랄드=다크 기준).
+   useAccentTheme 훅이 테마를 바꿀 때 이 값들을 통째로 덮어씀 */
+:root {
+  --color-text: #ffffff;
+  --color-text-soft: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-text-faint: #64748b;
+  --color-sheet: #1e293b;
+  --color-surface: rgba(30, 41, 59, 0.6);
+  --color-surface-soft: rgba(255, 255, 255, 0.1);
+  --color-surface-soft-hover: rgba(255, 255, 255, 0.2);
+  --color-surface-faint: rgba(255, 255, 255, 0.05);
+  --color-surface-strong: rgba(255, 255, 255, 0.7);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.25);
+  --color-backdrop: rgba(0, 0, 0, 0.6);
+  --color-backdrop-strong: rgba(0, 0, 0, 0.8);
+}
+
+/* 카카오톡 등 인앱 브라우저에서 화면을 아래로 당기면 body 뒤의 브라우저 기본(흰색) 배경이
+   드러나면서 통통 튕기는 문제 방지. 실제 스크롤은 각 탭의 [data-scroll-page] 안에서만
+   일어나게 만들어놨으므로, 문서 자체(html/body)는 아예 스크롤/바운스되지 않게 막음 */
+html, body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
-  background: #0f1115;
-  color: #f3f4f6;
+  background: var(--color-app-bg);
+  color: var(--color-text);
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -12,10 +51,10 @@ button:not(:disabled) {
 }
 
 /* 네이티브 select 드롭다운은 OS 기본 배경(흰색)을 쓰는 경우가 많아서,
-   text-white가 적용된 옵션이 흰 배경에 흰 글씨로 안 보이는 문제를 막기 위해 명시 지정 */
+   텍스트 색이 배경과 겹쳐 안 보이는 문제를 막기 위해 명시 지정 */
 select option {
-  background-color: #1e293b;
-  color: #f3f4f6;
+  background-color: var(--color-sheet);
+  color: var(--color-text);
 }
 
 @keyframes overlay-in {
@@ -44,14 +83,4 @@ select option {
 @keyframes radar-in {
   from { transform: scale(0); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
-}
-
-@keyframes slide-next-in {
-  from { transform: translateX(85%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slide-prev-in {
-  from { transform: translateX(-85%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
 }

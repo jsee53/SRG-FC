@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { filterMembers, sortMembersFlat } from '../utils/tier'
 import { getAceMemberId } from '../utils/ace'
 import PositionTabs from '../components/PositionTabs'
@@ -52,12 +52,12 @@ export default function RankingPage({
           <button
             type="button"
             onClick={() => setShowAddMember(true)}
-            className="mr-auto rounded-full bg-white/10 px-3 py-1 text-xs text-slate-300 transition-colors hover:bg-white/20"
+            className="mr-auto rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-xs text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)]"
           >
             멤버 추가
           </button>
         )}
-        <span className="text-xs text-slate-400">정렬</span>
+        <span className="text-xs text-[var(--color-text-muted)]">정렬</span>
         <SortToggle active={sortBy} onChange={setSortBy} />
       </div>
       <RankingList

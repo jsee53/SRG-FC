@@ -1,8 +1,8 @@
-import { compareByOvr, compareByName } from '../utils/tier'
+﻿import { compareByOvr, compareByName } from '../utils/tier'
 import MemberCard from './MemberCard'
 
 function EmptyState() {
-  return <p className="py-10 text-center text-slate-400">해당 포지션 멤버가 없습니다.</p>
+  return <p className="py-10 text-center text-[var(--color-text-muted)]">해당 포지션 멤버가 없습니다.</p>
 }
 
 export default function RankingList({ members, filter, sortBy, selectedId, aceId, onSelect }) {

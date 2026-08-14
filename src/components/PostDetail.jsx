@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { resolveAuthorName } from '../utils/authorName'
 import { useComments } from '../hooks/useComments'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
@@ -25,7 +25,7 @@ export default function PostDetail({
 
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
-  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
 
   const canDeletePost = isAdmin || session?.user.id === post.authorId
   const canEditPost = session?.user.id === post.authorId
@@ -58,14 +58,14 @@ export default function PostDetail({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-backdrop)] ${
         closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
       }`}
       onClick={requestClose}
     >
       <div
         ref={sheetRef}
-        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-[var(--color-sheet)] p-5 pb-8 ${
           closing
             ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
             : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
@@ -74,51 +74,52 @@ export default function PostDetail({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{post.title}</h2>
           <button
             type="button"
             onClick={requestClose}
-            className="flex-none rounded-full bg-white/10 px-3.5 py-1.5 text-base text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+            className="flex-none rounded-full bg-[var(--color-surface-soft)] px-3.5 py-1.5 text-base text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)] hover:text-[var(--color-text)]"
           >
             닫기
           </button>
         </div>
 
         <div className="mt-1 flex items-center justify-between">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[var(--color-text-muted)]">
             {resolveAuthorName(members, post.authorId, post.authorEmail)} ·{' '}
             {new Date(post.createdAt).toLocaleDateString('ko-KR')}
           </p>
           <div className="flex flex-none gap-2 text-sm">
             {canEditPost && (
-              <button type="button" onClick={() => onEditPost(post)} className="text-slate-400 hover:text-white">
+              <button type="button" onClick={() => onEditPost(post)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
                 수정
               </button>
             )}
             {canDeletePost && (
-              <button type="button" onClick={handleDeletePost} className="text-slate-500 hover:text-red-400">
+              <button type="button" onClick={handleDeletePost} className="text-[var(--color-text-faint)] hover:text-red-400">
                 글 삭제
               </button>
             )}
           </div>
         </div>
 
-        <p className="mt-4 whitespace-pre-wrap text-base text-slate-200">{post.content}</p>
+        <p className="mt-4 whitespace-pre-wrap text-base text-[var(--color-text-soft)]">{post.content}</p>
 
         <button
           type="button"
           onClick={handleTogglePostLike}
-          className={`mt-2 text-sm transition-colors ${isLiked ? 'text-rose-400' : 'text-slate-500 hover:text-rose-300'}`}
+          className={`mt-2 text-sm transition-colors ${isLiked ? 'text-rose-400' : 'text-[var(--color-text-faint)] hover:text-rose-300'}`}
         >
           {isLiked ? '♥' : '♡'} 좋아요 {post.likedUserIds.length}
         </button>
 
-        <div className="mt-6 border-t border-white/10 pt-4">
-          <p className="mb-2 text-sm font-semibold text-slate-300">댓글 {comments.length}</p>
+        <div className="mt-6 border-t border-[var(--color-border)] pt-4">
+          <p className="mb-2 text-sm font-semibold text-[var(--color-text-soft)]">댓글 {comments.length}</p>
           {loading ? (
-            <p className="py-4 text-center text-sm text-slate-400">불러오는 중...</p>
+            <p className="py-4 text-center text-sm text-[var(--color-text-muted)]">불러오는 중...</p>
           ) : (
             <CommentList
               comments={comments}
@@ -143,7 +144,7 @@ export default function PostDetail({
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-none rounded-full bg-emerald-400 px-4 py-1.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
+                className="flex-none rounded-full bg-accent-400 px-4 py-1.5 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
               >
                 등록
               </button>
@@ -152,7 +153,7 @@ export default function PostDetail({
             <button
               type="button"
               onClick={onRequireLogin}
-              className="mt-3 w-full rounded-full bg-white/10 py-2 text-sm text-slate-300 transition-colors hover:bg-white/20"
+              className="mt-3 w-full rounded-full bg-[var(--color-surface-soft)] py-2 text-sm text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)]"
             >
               로그인하고 댓글 쓰기
             </button>

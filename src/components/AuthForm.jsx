@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { inputClass, Select } from './memberFormFields'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import { useDismissAnimation } from '../hooks/useDismissAnimation'
@@ -23,7 +23,7 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
   const sheetRef = useRef(null)
-  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -81,14 +81,14 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-backdrop)] ${
         closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
       }`}
       onClick={requestClose}
     >
       <div
         ref={sheetRef}
-        className={`w-full max-w-md rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+        className={`w-full max-w-md rounded-t-3xl bg-[var(--color-sheet)] p-5 pb-8 ${
           closing
             ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
             : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
@@ -97,12 +97,13 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
       >
         <div className="flex justify-end">
           <button
             type="button"
             onClick={requestClose}
-            className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+            className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-sm text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)] hover:text-[var(--color-text)]"
           >
             닫기
           </button>
@@ -113,7 +114,7 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
             type="button"
             onClick={() => switchMode('login')}
             className={`flex-1 rounded-full py-1.5 text-sm font-medium transition-colors ${
-              mode === 'login' ? 'bg-emerald-400 text-emerald-950' : 'bg-white/10 text-slate-300'
+              mode === 'login' ? 'bg-accent-400 text-accent-950' : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)]'
             }`}
           >
             로그인
@@ -122,7 +123,7 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
             type="button"
             onClick={() => switchMode('signup')}
             className={`flex-1 rounded-full py-1.5 text-sm font-medium transition-colors ${
-              mode === 'signup' ? 'bg-emerald-400 text-emerald-950' : 'bg-white/10 text-slate-300'
+              mode === 'signup' ? 'bg-accent-400 text-accent-950' : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)]'
             }`}
           >
             회원가입
@@ -131,11 +132,11 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
 
         {notice ? (
           <div className="mt-4 flex flex-col gap-3">
-            <p className="text-sm text-emerald-300">{notice}</p>
+            <p className="text-sm text-accent-300">{notice}</p>
             <button
               type="button"
               onClick={() => switchMode('login')}
-              className="rounded-full bg-emerald-400 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300"
+              className="rounded-full bg-accent-400 py-2.5 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300"
             >
               로그인 화면으로
             </button>
@@ -165,7 +166,7 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
             />
 
             {mode === 'signup' && (
-              <label className="flex flex-col gap-1 text-xs text-slate-400">
+              <label className="flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
                 내 이름 선택 (없으면 연결 안 함)
                 <Select value={memberId} onChange={(e) => setMemberId(e.target.value)}>
                   <option value="">연결 안 함</option>
@@ -183,7 +184,7 @@ export default function AuthForm({ members, onClose, onSignIn, onSignUp }) {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-1 rounded-full bg-emerald-400 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
+              className="mt-1 rounded-full bg-accent-400 py-2.5 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
             >
               {submitting ? '처리 중...' : mode === 'login' ? '로그인' : '회원가입'}
             </button>

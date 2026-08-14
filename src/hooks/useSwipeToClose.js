@@ -10,12 +10,16 @@ export function useSwipeToClose(sheetRef, requestClose) {
   const dragging = useRef(false)
 
   function handleTouchStart(e) {
+    // 모달 안의 스와이프는 모달 자신의 동작이라, 뒤에 있는 페이지 좌우 스와이프 전환으로
+    // 새어나가면 안 됨 (모달 열려있는데 뒤 탭이 같이 넘어가버리는 문제 방지)
+    e.stopPropagation()
     const t = e.touches[0]
     touchStart.current = { x: t.clientX, y: t.clientY, scrollTop: sheetRef.current?.scrollTop ?? 0 }
     dragging.current = false
   }
 
   function handleTouchMove(e) {
+    e.stopPropagation()
     if (!touchStart.current || !sheetRef.current) return
     const t = e.touches[0]
     const dx = t.clientX - touchStart.current.x
@@ -28,7 +32,20 @@ export function useSwipeToClose(sheetRef, requestClose) {
     }
   }
 
+  // 제스처가 touchend 없이 touchcancel로 끝나버리면(카카오톡 인앱 브라우저 등에서
+  // 종종 일어남) 드래그 중 걸어놓은 translateY가 안 지워진 채 남을 수 있어서, 여기서도 정리함
+  function handleTouchCancel(e) {
+    e.stopPropagation()
+    touchStart.current = null
+    if (dragging.current && sheetRef.current) {
+      sheetRef.current.style.transition = ''
+      sheetRef.current.style.transform = ''
+    }
+    dragging.current = false
+  }
+
   function handleTouchEnd(e) {
+    e.stopPropagation()
     if (!touchStart.current) return
     const t = e.changedTouches[0]
     const dy = t.clientY - touchStart.current.y
@@ -57,5 +74,5 @@ export function useSwipeToClose(sheetRef, requestClose) {
     }
   }
 
-  return { handleTouchStart, handleTouchMove, handleTouchEnd }
+  return { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel }
 }

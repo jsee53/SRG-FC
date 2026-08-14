@@ -1,4 +1,4 @@
-import { TIER_STYLES } from '../utils/tierStyles'
+﻿import { TIER_STYLES } from '../utils/tierStyles'
 import { TIER_NAMES } from '../utils/tier'
 import { powerScore } from '../utils/teamBuilder'
 import Avatar from './Avatar'
@@ -7,10 +7,10 @@ export default function TeamResultCard({ index, team }) {
   const sortedMembers = [...team.members].sort((a, b) => powerScore(b) - powerScore(a))
 
   return (
-    <div className="rounded-2xl bg-slate-800/60 p-4 ring-1 ring-white/10">
+    <div className="rounded-2xl bg-[var(--color-surface)] p-4 ring-1 ring-[var(--color-border)]">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">{index + 1}팀</h3>
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-[var(--color-text-muted)]">
           {team.members.length}명 · 평균 능력치 {team.avgScore}
         </span>
       </div>
@@ -19,10 +19,10 @@ export default function TeamResultCard({ index, team }) {
         {sortedMembers.map((entry) =>
           entry.isMercenary ? (
             <div key={entry.id} className="flex items-center gap-2 text-sm">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-dashed border-white/30 text-xs text-slate-300">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-dashed border-[var(--color-border-strong)] text-xs text-[var(--color-text-soft)]">
                 용병
               </div>
-              <span className="flex-1 text-slate-300">{entry.label}</span>
+              <span className="flex-1 text-[var(--color-text-soft)]">{entry.label}</span>
               <span className={`flex-none rounded px-1.5 py-0.5 text-xs font-bold ${TIER_STYLES[entry.tier].badge}`}>
                 {TIER_NAMES[entry.tier]}
               </span>

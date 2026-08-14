@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { formatTimeRange } from '../utils/time'
 import EventTeams from './EventTeams'
 
@@ -52,20 +52,20 @@ export default function EventCard({
 
   return (
     <div
-      className="rounded-2xl bg-slate-800/60 p-4 ring-1 ring-white/10"
+      className="rounded-2xl bg-[var(--color-surface)] p-4 ring-1 ring-[var(--color-border)]"
       onClick={() => setExpanded((v) => !v)}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 text-left">
           <div className="flex items-center gap-2">
-            <p className="font-semibold text-white">{formatDate(event.eventDate)}</p>
+            <p className="font-semibold text-[var(--color-text)]">{formatDate(event.eventDate)}</p>
             {event.confirmed && (
-              <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+              <span className="rounded-full bg-accent-400/20 px-2 py-0.5 text-[10px] font-bold text-accent-300">
                 경기 성사
               </span>
             )}
           </div>
-          <p className="mt-0.5 text-xs text-slate-400">
+          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
             {timeRange && `${timeRange} · `}
             {event.location && `${event.location} · `}참석자 {rosterCount}명
             {mercCount > 0 && ` + 용병 ${mercCount}명`}
@@ -81,7 +81,7 @@ export default function EventCard({
                   e.stopPropagation()
                   onEdit(event)
                 }}
-                className="text-slate-400 hover:text-white"
+                className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
               >
                 수정
               </button>
@@ -91,19 +91,19 @@ export default function EventCard({
                   e.stopPropagation()
                   onDelete(event.id)
                 }}
-                className="text-slate-500 hover:text-red-400"
+                className="text-[var(--color-text-faint)] hover:text-red-400"
               >
                 삭제
               </button>
             </>
           )}
-          <span className="text-slate-500">{expanded ? '▲' : '▼'}</span>
+          <span className="text-[var(--color-text-faint)]">{expanded ? '▲' : '▼'}</span>
         </div>
       </div>
 
       {expanded && (
         <>
-          <p className="mt-3 text-sm text-slate-300">
+          <p className="mt-3 text-sm text-[var(--color-text-soft)]">
             {event.attendees.length > 0 ? event.attendees.map((a) => a.name).join(', ') : '참석자 없음'}
           </p>
 
@@ -115,8 +115,8 @@ export default function EventCard({
                 disabled={pendingConfirm}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors disabled:opacity-40 ${
                   event.confirmed
-                    ? 'bg-white/10 text-slate-300 hover:bg-white/20'
-                    : 'bg-emerald-400 text-emerald-950 hover:bg-emerald-300'
+                    ? 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft-hover)]'
+                    : 'bg-accent-400 text-accent-950 hover:bg-accent-300'
                 }`}
               >
                 {pendingConfirm ? '처리 중...' : event.confirmed ? '경기 성사 취소' : '경기 성사됨으로 등록'}
@@ -126,7 +126,7 @@ export default function EventCard({
               <button
                 type="button"
                 onClick={() => onBuildTeams(event)}
-                className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-300 transition-colors hover:bg-white/20"
+                className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-xs font-medium text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)]"
               >
                 {hasTeams ? '팀 다시 짜기' : '팀 짜기'}
               </button>
@@ -136,7 +136,7 @@ export default function EventCard({
                 type="button"
                 onClick={handleResetTeams}
                 disabled={resetting}
-                className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-300 transition-colors hover:bg-red-400/20 hover:text-red-300 disabled:opacity-40"
+                className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-xs font-medium text-[var(--color-text-soft)] transition-colors hover:bg-red-400/20 hover:text-red-300 disabled:opacity-40"
               >
                 {resetting ? '초기화 중...' : '팀 초기화'}
               </button>

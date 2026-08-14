@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { buildBalancedTeams } from '../utils/teamBuilder'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import { useDismissAnimation } from '../hooks/useDismissAnimation'
@@ -20,7 +20,7 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
   const sheetRef = useRef(null)
-  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
   const participants = toParticipants(event, members)
   const [teamCount, setTeamCount] = useState(3)
   const [teams, setTeams] = useState(null)
@@ -57,14 +57,14 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-backdrop)] ${
         closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
       }`}
       onClick={requestClose}
     >
       <div
         ref={sheetRef}
-        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-[var(--color-sheet)] p-5 pb-8 ${
           closing
             ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
             : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
@@ -73,35 +73,36 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">팀 짜기</h2>
           <button
             type="button"
             onClick={requestClose}
-            className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+            className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-sm text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)] hover:text-[var(--color-text)]"
           >
             닫기
           </button>
         </div>
 
         <div className="mt-4 flex items-center gap-2">
-          <span className="text-xs text-slate-400">팀 수</span>
-          <div className="flex gap-1 rounded-full bg-white/10 p-1">
+          <span className="text-xs text-[var(--color-text-muted)]">팀 수</span>
+          <div className="flex gap-1 rounded-full bg-[var(--color-surface-soft)] p-1">
             {[2, 3].map((n) => (
               <button
                 key={n}
                 type="button"
                 onClick={() => setTeamCount(n)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  teamCount === n ? 'bg-emerald-400 text-emerald-950' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  teamCount === n ? 'bg-accent-400 text-accent-950' : 'text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft)] hover:text-[var(--color-text)]'
                 }`}
               >
                 {n}팀
               </button>
             ))}
           </div>
-          <span className="text-xs text-slate-400">참석자 {participants.length}명</span>
+          <span className="text-xs text-[var(--color-text-muted)]">참석자 {participants.length}명</span>
         </div>
 
         {!teams && !isGenerating && (
@@ -109,13 +110,13 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
             type="button"
             disabled={!canGenerate}
             onClick={handleGenerate}
-            className="mt-4 w-full rounded-full bg-emerald-400 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
+            className="mt-4 w-full rounded-full bg-accent-400 py-2.5 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
           >
             팀 나누기
           </button>
         )}
         {!canGenerate && !teams && (
-          <p className="mt-1 text-center text-xs text-slate-400">최소 {teamCount}명은 있어야 팀을 나눌 수 있어요.</p>
+          <p className="mt-1 text-center text-xs text-[var(--color-text-muted)]">최소 {teamCount}명은 있어야 팀을 나눌 수 있어요.</p>
         )}
 
         {isGenerating && (
@@ -135,7 +136,7 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
             <button
               type="button"
               onClick={handleGenerate}
-              className="rounded-full bg-white/10 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-white/20"
+              className="rounded-full bg-[var(--color-surface-soft)] py-2 text-sm font-medium text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)]"
             >
               다시 나누기
             </button>
@@ -146,7 +147,7 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="rounded-full bg-emerald-400 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
+              className="rounded-full bg-accent-400 py-2.5 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
             >
               {saving ? '저장 중...' : '이 팀으로 저장'}
             </button>

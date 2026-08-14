@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
 import { TIER_STYLES } from '../utils/tierStyles'
 
@@ -8,14 +8,14 @@ export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
 
   return (
     <div className="px-4 py-3">
-      <h2 className="mb-2 text-sm font-semibold text-slate-300">용병 추가</h2>
+      <h2 className="mb-2 text-sm font-semibold text-[var(--color-text-soft)]">용병 추가</h2>
 
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 rounded-full bg-white/10 px-1">
+        <div className="flex items-center gap-2 rounded-full bg-[var(--color-surface-soft)] px-1">
           <button
             type="button"
             onClick={() => setCount((c) => Math.max(1, c - 1))}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-lg text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-lg text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft)] hover:text-[var(--color-text)]"
           >
             −
           </button>
@@ -23,7 +23,7 @@ export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
           <button
             type="button"
             onClick={() => setCount((c) => Math.min(10, c + 1))}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-lg text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-lg text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft)] hover:text-[var(--color-text)]"
           >
             +
           </button>
@@ -36,7 +36,7 @@ export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
               type="button"
               onClick={() => setTier(t)}
               className={`flex-none rounded-full px-3 py-1 text-xs font-bold transition-colors ${
-                tier === t ? TIER_STYLES[t].badge : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                tier === t ? TIER_STYLES[t].badge : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft-hover)]'
               }`}
             >
               {TIER_NAMES[t]}
@@ -47,7 +47,7 @@ export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
         <button
           type="button"
           onClick={() => onAdd(count, tier)}
-          className="flex-none rounded-full bg-emerald-400 px-3 py-1.5 text-sm font-medium text-emerald-950 transition-colors hover:bg-emerald-300"
+          className="flex-none rounded-full bg-accent-400 px-3 py-1.5 text-sm font-medium text-accent-950 transition-colors hover:bg-accent-300"
         >
           추가
         </button>

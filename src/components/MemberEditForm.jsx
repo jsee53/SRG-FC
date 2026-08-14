@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { STAT_LABELS } from '../utils/tierStyles'
 import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
 import { ROLE_LABELS } from '../utils/roles'
@@ -11,7 +11,7 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
   const sheetRef = useRef(null)
-  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
   const [form, setForm] = useState({
     name: member.name,
     number: member.number ?? '',
@@ -69,14 +69,14 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-backdrop)] ${
         closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
       }`}
       onClick={requestClose}
     >
       <div
         ref={sheetRef}
-        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-[var(--color-sheet)] p-5 pb-8 ${
           closing
             ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
             : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
@@ -85,13 +85,14 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{member.name} 정보 수정</h2>
           <button
             type="button"
             onClick={requestClose}
-            className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+            className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-sm text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)] hover:text-[var(--color-text)]"
           >
             닫기
           </button>
@@ -132,7 +133,7 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
           </Field>
 
           <div>
-            <p className="mb-2 text-xs text-slate-400">능력치 (0~99)</p>
+            <p className="mb-2 text-xs text-[var(--color-text-muted)]">능력치 (0~99)</p>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(STAT_LABELS).map(([key, label]) => (
                 <Field key={key} label={label}>
@@ -154,7 +155,7 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
           <button
             type="submit"
             disabled={submitting}
-            className="mt-1 rounded-full bg-emerald-400 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
+            className="mt-1 rounded-full bg-accent-400 py-2.5 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
           >
             {submitting ? '저장 중...' : '저장'}
           </button>
@@ -163,7 +164,7 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="rounded-full bg-white/10 py-2 text-sm text-red-400 transition-colors hover:bg-red-400/20 disabled:opacity-40"
+            className="rounded-full bg-[var(--color-surface-soft)] py-2 text-sm text-red-400 transition-colors hover:bg-red-400/20 disabled:opacity-40"
           >
             {deleting ? '삭제 중...' : '멤버 삭제'}
           </button>
