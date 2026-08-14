@@ -6,4 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   base: '/SRG-FC/',
   plugins: [react(), tailwindcss()],
+  preview: {
+    allowedHosts: true,
+  },
 })
