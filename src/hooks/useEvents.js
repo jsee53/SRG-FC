@@ -7,6 +7,7 @@ function mapRow(row) {
     eventDate: row.event_date,
     startTime: row.start_time,
     endTime: row.end_time,
+    location: row.location,
     confirmed: row.confirmed,
     createdBy: row.created_by,
     attendees: (row.event_attendees ?? []).map((a) => ({
@@ -21,6 +22,12 @@ function mapRow(row) {
 
 // attendees: [{ name, memberId, tier }] — memberId는 로스터 멤버면 채워지고, 용병 자유 입력이면 null(+ 밸런싱용 tier)
 // 주의: 이 함수는 기존 참석자 행을 지우고 새로 만들기 때문에, 이미 저장된 team_index/베스트 플레이어 투표는 초기화됨
+// 다음 일정 등록 때 드롭다운으로 재사용할 수 있게, 새 장소 이름이면 저장해둠
+async function saveLocationIfNew(location) {
+  if (!location) return
+  await supabase.from('event_locations').upsert({ name: location }, { onConflict: 'name', ignoreDuplicates: true })
+}
+
 async function replaceAttendees(eventId, attendees) {
   const { error: deleteError } = await supabase.from('event_attendees').delete().eq('event_id', eventId)
   if (deleteError) return { error: deleteError }
@@ -58,13 +65,14 @@ export function useEvents() {
     refetch()
   }, [refetch])
 
-  const createEvent = useCallback(async (session, eventDate, startTime, endTime, attendees) => {
+  const createEvent = useCallback(async (session, eventDate, startTime, endTime, location, attendees) => {
     const { data: event, error: insertError } = await supabase
       .from('events')
       .insert({
         event_date: eventDate,
         start_time: startTime || null,
         end_time: endTime || null,
+        location: location || null,
         created_by: session.user.id,
       })
       .select()
@@ -75,14 +83,15 @@ export function useEvents() {
     const { error: attendeesError } = await replaceAttendees(event.id, attendees)
     if (attendeesError) return { error: attendeesError }
 
+    await saveLocationIfNew(location)
     await refetch()
     return { error: null }
   }, [refetch])
 
-  const updateEvent = useCallback(async (id, eventDate, startTime, endTime, attendees) => {
+  const updateEvent = useCallback(async (id, eventDate, startTime, endTime, location, attendees) => {
     const { error: updateError } = await supabase
       .from('events')
-      .update({ event_date: eventDate, start_time: startTime || null, end_time: endTime || null })
+      .update({ event_date: eventDate, start_time: startTime || null, end_time: endTime || null, location: location || null })
       .eq('id', id)
 
     if (updateError) return { error: updateError }
@@ -90,6 +99,7 @@ export function useEvents() {
     const { error: attendeesError } = await replaceAttendees(id, attendees)
     if (attendeesError) return { error: attendeesError }
 
+    await saveLocationIfNew(location)
     await refetch()
     return { error: null }
   }, [refetch])

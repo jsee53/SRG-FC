@@ -51,13 +51,13 @@ export default function BoardPage({ members, session, isAdmin, canPostNotice, on
               onClick={() => setSelectedPost(post)}
               className={`rounded-2xl p-4 text-left transition-all hover:-translate-y-0.5 hover:brightness-110 ${
                 post.isNotice
-                  ? 'bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_4px_rgba(251,191,36,0.15)]'
+                  ? 'bg-emerald-400/10 ring-2 ring-emerald-400/60 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]'
                   : 'bg-slate-800/60 ring-1 ring-white/10'
               }`}
             >
               <div className="flex items-center gap-2">
                 {post.isNotice && (
-                  <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-amber-950">
+                  <span className="rounded-full bg-emerald-400 px-2 py-0.5 text-[10px] font-bold text-emerald-950">
                     공지
                   </span>
                 )}

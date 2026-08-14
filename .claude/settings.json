@@ -10,7 +10,8 @@
       "Bash(git remote *)",
       "Bash(git fetch *)",
       "Bash(git checkout *)",
-      "Bash(npm audit *)"
+      "Bash(npm audit *)",
+      "PowerShell(npm run build 2>&1)"
     ]
   }
 }

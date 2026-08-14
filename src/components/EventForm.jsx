@@ -1,17 +1,23 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { inputClass, Select } from './memberFormFields'
 import { TIME_OPTIONS, toHHMM } from '../utils/time'
 import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
+import { useDismissAnimation } from '../hooks/useDismissAnimation'
+import { useSwipeToClose } from '../hooks/useSwipeToClose'
 import AttendeeChip from './AttendeeChip'
 
 const DEFAULT_MERC_TIER = 'C'
 
-export default function EventForm({ members, event, onClose, onSubmit }) {
+export default function EventForm({ members, locations, event, onClose, onSubmit }) {
   useLockBodyScroll()
+  const { closing, requestClose } = useDismissAnimation(onClose)
+  const sheetRef = useRef(null)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
   const [eventDate, setEventDate] = useState(event?.eventDate ?? '')
   const [startTime, setStartTime] = useState(toHHMM(event?.startTime))
   const [endTime, setEndTime] = useState(toHHMM(event?.endTime))
+  const [location, setLocation] = useState(event?.location ?? '')
   const [attendingIds, setAttendingIds] = useState(
     new Set((event?.attendees ?? []).filter((a) => a.memberId != null).map((a) => a.memberId))
   )
@@ -55,7 +61,7 @@ export default function EventForm({ members, event, onClose, onSubmit }) {
       .filter((m) => attendingIds.has(m.id))
       .map((m) => ({ name: m.name, memberId: m.id }))
     const extraAttendees = extras.map(({ name, tier }) => ({ name, memberId: null, tier }))
-    const { error: submitError } = await onSubmit(eventDate, startTime, endTime, [
+    const { error: submitError } = await onSubmit(eventDate, startTime, endTime, location, [
       ...memberAttendees,
       ...extraAttendees,
     ])
@@ -65,30 +71,50 @@ export default function EventForm({ members, event, onClose, onSubmit }) {
       setError('저장에 실패했어요. 다시 시도해주세요.')
       return
     }
-    onClose()
+    requestClose()
   }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 [animation:overlay-in_0.15s_ease-out]"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+        closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
+      }`}
+      onClick={requestClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 [animation:sheet-in_0.2s_ease-out]"
+        ref={sheetRef}
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+          closing
+            ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
+            : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
+        }`}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{event ? '일정 수정' : '일정 등록'}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
-          >
-            닫기
-          </button>
+          <div className="flex flex-none items-center gap-2">
+            <button
+              type="submit"
+              form="event-form"
+              disabled={submitting}
+              className="rounded-full bg-emerald-400 px-3 py-1 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-300 disabled:opacity-40"
+            >
+              {submitting ? '저장 중...' : event ? '수정 완료' : '등록'}
+            </button>
+            <button
+              type="button"
+              onClick={requestClose}
+              className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+            >
+              닫기
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
+        <form id="event-form" onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-xs text-slate-400">
             날짜
             <input
@@ -98,6 +124,22 @@ export default function EventForm({ members, event, onClose, onSubmit }) {
               onChange={(e) => setEventDate(e.target.value)}
               className={inputClass}
             />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-slate-400">
+            장소 (선택, 목록에서 고르거나 직접 입력)
+            <input
+              list="event-location-options"
+              placeholder="예: PEC"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className={inputClass}
+            />
+            <datalist id="event-location-options">
+              {(locations ?? []).map((loc) => (
+                <option key={loc} value={loc} />
+              ))}
+            </datalist>
           </label>
 
           <div className="grid grid-cols-2 gap-3">

@@ -660,6 +660,23 @@ end;
 $$ language plpgsql security definer;
 
 -- =============================================================
+-- Phase 6: 일정 장소
+-- =============================================================
+alter table events add column if not exists location text;
+
+-- 한 번 등록된 장소는 서버에 저장해서, 다음 일정 등록할 때 드롭다운으로 재사용할 수 있게 함
+create table if not exists event_locations (
+  id bigint generated always as identity primary key,
+  name text unique not null
+);
+alter table event_locations enable row level security;
+create policy "anyone can view event locations" on event_locations for select using (true);
+create policy "event managers can add event locations" on event_locations for insert with check (is_event_manager());
+
+insert into event_locations (name) values ('PEC'), ('고려대'), ('경기대')
+  on conflict (name) do nothing;
+
+-- =============================================================
 -- 관리자 등록 방법 (이 SQL을 실행한 뒤, 별도로 진행하세요)
 -- =============================================================
 -- 1. Supabase 대시보드 > Authentication > Users > Add user 에서

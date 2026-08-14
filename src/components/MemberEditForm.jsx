@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { STAT_LABELS } from '../utils/tierStyles'
 import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
 import { ROLE_LABELS } from '../utils/roles'
 import { Field, inputClass, MemberBasicFields, Select } from './memberFormFields'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
+import { useDismissAnimation } from '../hooks/useDismissAnimation'
+import { useSwipeToClose } from '../hooks/useSwipeToClose'
 
 export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
   useLockBodyScroll()
+  const { closing, requestClose } = useDismissAnimation(onClose)
+  const sheetRef = useRef(null)
+  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
   const [form, setForm] = useState({
     name: member.name,
     number: member.number ?? '',
@@ -31,7 +36,7 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
       setError('삭제에 실패했어요. 다시 시도해주세요.')
       return
     }
-    onClose()
+    requestClose()
   }
 
   function updateStat(key, value) {
@@ -59,23 +64,33 @@ export default function MemberEditForm({ member, onClose, onSave, onDelete }) {
       setError('저장에 실패했어요. 다시 시도해주세요.')
       return
     }
-    onClose()
+    requestClose()
   }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 [animation:overlay-in_0.15s_ease-out]"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+        closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
+      }`}
+      onClick={requestClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 [animation:sheet-in_0.2s_ease-out]"
+        ref={sheetRef}
+        className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
+          closing
+            ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
+            : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
+        }`}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{member.name} 정보 수정</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
           >
             닫기

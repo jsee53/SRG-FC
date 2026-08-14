@@ -3,6 +3,7 @@ import { resolveAuthorName } from '../utils/authorName'
 import { useComments } from '../hooks/useComments'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import { useDismissAnimation } from '../hooks/useDismissAnimation'
+import { useSwipeToClose } from '../hooks/useSwipeToClose'
 import { inputClass } from './memberFormFields'
 import CommentList from './CommentList'
 
@@ -21,29 +22,10 @@ export default function PostDetail({
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const sheetRef = useRef(null)
-  const touchStart = useRef(null)
 
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
-
-  function handleTouchStart(e) {
-    const t = e.touches[0]
-    touchStart.current = { x: t.clientX, y: t.clientY, scrollTop: sheetRef.current?.scrollTop ?? 0 }
-  }
-
-  function handleTouchEnd(e) {
-    if (!touchStart.current) return
-    const t = e.changedTouches[0]
-    const dx = t.clientX - touchStart.current.x
-    const dy = t.clientY - touchStart.current.y
-    const startScrollTop = touchStart.current.scrollTop
-    touchStart.current = null
-
-    // 맨 위까지 스크롤된 상태에서 아래로 당기면 닫기
-    if (dy > 80 && dy > Math.abs(dx) * 1.5 && startScrollTop <= 0) {
-      requestClose()
-    }
-  }
+  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose(sheetRef, requestClose)
 
   const canDeletePost = isAdmin || session?.user.id === post.authorId
   const canEditPost = session?.user.id === post.authorId
@@ -77,17 +59,20 @@ export default function PostDetail({
   return (
     <div
       className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
-        closing ? '[animation:overlay-out_0.2s_ease-out_forwards]' : '[animation:overlay-in_0.15s_ease-out]'
+        closing ? '[animation:overlay-out_0.22s_ease-in_forwards]' : '[animation:overlay-in_0.2s_ease-out]'
       }`}
       onClick={requestClose}
     >
       <div
         ref={sheetRef}
         className={`max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 p-5 pb-8 ${
-          closing ? '[animation:sheet-out_0.2s_ease-out_forwards]' : '[animation:sheet-in_0.2s_ease-out]'
+          closing
+            ? '[animation:sheet-out_0.22s_cubic-bezier(0.32,0.72,0,1)_forwards]'
+            : '[animation:sheet-in_0.32s_cubic-bezier(0.32,0.72,0,1)]'
         }`}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         <div className="flex items-center justify-between">
@@ -95,7 +80,7 @@ export default function PostDetail({
           <button
             type="button"
             onClick={requestClose}
-            className="flex-none rounded-full bg-white/10 px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+            className="flex-none rounded-full bg-white/10 px-3.5 py-1.5 text-base text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
           >
             닫기
           </button>
@@ -106,7 +91,7 @@ export default function PostDetail({
             {resolveAuthorName(members, post.authorId, post.authorEmail)} ·{' '}
             {new Date(post.createdAt).toLocaleDateString('ko-KR')}
           </p>
-          <div className="flex flex-none gap-2 text-xs">
+          <div className="flex flex-none gap-2 text-sm">
             {canEditPost && (
               <button type="button" onClick={() => onEditPost(post)} className="text-slate-400 hover:text-white">
                 수정
@@ -120,7 +105,7 @@ export default function PostDetail({
           </div>
         </div>
 
-        <p className="mt-4 whitespace-pre-wrap text-sm text-slate-200">{post.content}</p>
+        <p className="mt-4 whitespace-pre-wrap text-base text-slate-200">{post.content}</p>
 
         <button
           type="button"
