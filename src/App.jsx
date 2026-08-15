@@ -93,11 +93,15 @@ function App() {
       tallyByGroup.set(key, tally)
     }
 
+    // 팀별 최다 득표자가 1명이면 그 사람만, 정확히 2명이 공동 최다면 둘 다 POM으로 인정.
+    // 3명 이상이 공동 최다면(득표가 너무 갈려서 확정할 수 없는 경우) 그 팀은 아무도 인정하지 않음
     const counts = {}
     for (const tally of tallyByGroup.values()) {
       const maxVotes = Math.max(...tally.values())
-      for (const [attendeeId, count] of tally.entries()) {
-        if (count !== maxVotes) continue
+      const winners = [...tally.entries()].filter(([, count]) => count === maxVotes)
+      if (winners.length > 2) continue
+
+      for (const [attendeeId] of winners) {
         const memberId = attendeeById.get(attendeeId)?.memberId
         if (memberId == null) continue
         counts[memberId] = (counts[memberId] ?? 0) + 1
