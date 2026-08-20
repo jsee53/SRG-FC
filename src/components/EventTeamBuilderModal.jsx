@@ -11,12 +11,16 @@ const GENERATE_DELAY_MS = 500
 function toParticipants(event, members) {
   return event.attendees.map((a) => {
     const member = a.memberId != null ? members.find((m) => m.id === a.memberId) : null
-    if (member) return { ...member, id: a.id, attendeeId: a.id }
+    // id/attendeeId는 팀 저장에 쓰이는 event_attendees 행의 id로 덮어써야 해서, 관리자 도구의
+    // 고정 배정과 매칭할 실제 로스터 멤버 id는 memberId로 따로 보존해둠 (teamBuilder.js의 pinKey 참고)
+    if (member) return { ...member, id: a.id, attendeeId: a.id, memberId: member.id }
     return { id: a.id, attendeeId: a.id, tier: a.tier ?? 'C', isMercenary: true, label: a.name }
   })
 }
 
-export default function EventTeamBuilderModal({ event, members, onClose, onSave }) {
+// 팀 고정 배정(pins)은 관리자 도구에서만 설정 가능 — 일정 관리 권한자도 여기서 직접
+// 고정시킬 수는 없고, 관리자가 미리 정해둔 전역 설정을 그대로 받아서 반영만 함
+export default function EventTeamBuilderModal({ event, matchNumber, members, equalMode, teamPins, onClose, onSave }) {
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
   const sheetRef = useRef(null)
@@ -37,7 +41,7 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
     setIsGenerating(true)
     setError('')
     timeoutRef.current = setTimeout(() => {
-      setTeams(buildBalancedTeams(participants, teamCount))
+      setTeams(buildBalancedTeams(participants, teamCount, equalMode, teamPins))
       setIsGenerating(false)
     }, GENERATE_DELAY_MS)
   }
@@ -76,7 +80,7 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
         onTouchCancel={handleTouchCancel}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">팀 짜기</h2>
+          <h2 className="text-lg font-bold">{matchNumber != null ? `${matchNumber}경기 팀 짜기` : '팀 짜기'}</h2>
           <button
             type="button"
             onClick={requestClose}
@@ -85,6 +89,12 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
             닫기
           </button>
         </div>
+
+        {equalMode && (
+          <p className="mt-3 rounded-lg bg-[var(--color-surface-soft)] px-3 py-2 text-center text-xs text-[var(--color-text-muted)]">
+            평등 모드 — S급 외 무작위 배정
+          </p>
+        )}
 
         <div className="mt-4 flex items-center gap-2">
           <span className="text-xs text-[var(--color-text-muted)]">팀 수</span>
@@ -130,7 +140,7 @@ export default function EventTeamBuilderModal({ event, members, onClose, onSave 
         {teams && !isGenerating && (
           <div className="mt-4 flex flex-col gap-3">
             {teams.map((team, i) => (
-              <TeamResultCard key={i} index={i} team={team} />
+              <TeamResultCard key={i} index={i} team={team} equalMode={equalMode} />
             ))}
 
             <button

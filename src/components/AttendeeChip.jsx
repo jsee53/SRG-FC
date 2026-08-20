@@ -1,9 +1,11 @@
-﻿import { TIER_STYLES } from '../utils/tierStyles'
+﻿import { TIER_STYLES, DISTORTED_TIER_LABEL, DISTORTED_TIER_STYLE } from '../utils/tierStyles'
 import { TIER_NAMES } from '../utils/tier'
 import Avatar from './Avatar'
 
-export default function AttendeeChip({ member, selected, onToggle }) {
-  const tier = TIER_STYLES[member.tier] ?? TIER_STYLES.D
+export default function AttendeeChip({ member, selected, equalMode, onToggle }) {
+  const hidden = equalMode && member.tier !== 'S'
+  const tier = hidden ? DISTORTED_TIER_STYLE : TIER_STYLES[member.tier] ?? TIER_STYLES.D
+  const tierLabel = hidden ? DISTORTED_TIER_LABEL[0] : TIER_NAMES[member.tier][0]
 
   return (
     <button
@@ -21,7 +23,7 @@ export default function AttendeeChip({ member, selected, onToggle }) {
           <span className={`truncate text-sm font-medium ${selected ? 'text-accent-300' : ''}`}>
             {member.name}
           </span>
-          <span className={`flex-none rounded px-1 text-[10px] font-bold ${tier.badge}`}>{TIER_NAMES[member.tier][0]}</span>
+          <span className={`flex-none rounded px-1 text-[10px] font-bold ${tier.badge}`}>{tierLabel}</span>
         </div>
         <div className={`truncate text-xs ${selected ? 'text-accent-200/70' : 'text-[var(--color-text-muted)]'}`}>
           {member.positions.join('/')}

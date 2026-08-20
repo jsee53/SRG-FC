@@ -12,6 +12,7 @@ import { useEvents } from './hooks/useEvents'
 import { useEventLocations } from './hooks/useEventLocations'
 import { useBestPlayerVotes } from './hooks/useBestPlayerVotes'
 import { useAccentTheme } from './hooks/useAccentTheme'
+import { useAppSettings } from './hooks/useAppSettings'
 
 const TABS = [
   { key: 'ranking', label: '랭킹' },
@@ -46,12 +47,31 @@ function App() {
     updateEvent,
     deleteEvent,
     setEventConfirmed,
-    saveEventTeams,
-    resetEventTeams,
+    addMatch,
+    saveMatchTeams,
+    resetMatchTeams,
+    deleteMatch,
   } = useEvents()
   const { locations: eventLocations, refetchLocations } = useEventLocations()
   const { votes, castVote, retractVote } = useBestPlayerVotes()
   const { theme: accentTheme, changeTheme: changeAccentTheme } = useAccentTheme()
+  const { settings: appSettings, setSetting: setAppSetting } = useAppSettings()
+  const equalMode = appSettings.equal_mode === true
+  const teamPins = appSettings.team_pins ?? {}
+
+  async function toggleEqualMode() {
+    await setAppSetting('equal_mode', !equalMode)
+  }
+
+  // 팀 짜기 탭은 관리자뿐 아니라 누구나 쓸 수 있어서, 관리자가 미리 정해둔 고정 배정이
+  // 누가 "팀 나누기"를 누르든 똑같이 적용되려면 브라우저 로컬 상태가 아니라 서버에 저장해야 함.
+  // app_settings에 새 key만 추가하는 거라 별도 테이블/RLS 없이 기존 구조를 그대로 재사용
+  async function updateTeamPin(key, teamIndex) {
+    const next = { ...teamPins }
+    if (teamIndex == null) delete next[key]
+    else next[key] = teamIndex
+    await setAppSetting('team_pins', next)
+  }
 
   async function createEventAndRefetchLocations(...args) {
     const result = await createEvent(...args)
@@ -87,7 +107,7 @@ function App() {
 
     const tallyByGroup = new Map()
     for (const vote of votes) {
-      const key = `${vote.eventId}-${vote.teamIndex}`
+      const key = `${vote.matchId}-${vote.teamIndex}`
       const tally = tallyByGroup.get(key) ?? new Map()
       tally.set(vote.votedAttendeeId, (tally.get(vote.votedAttendeeId) ?? 0) + 1)
       tallyByGroup.set(key, tally)
@@ -167,7 +187,7 @@ function App() {
   }
 
   return (
-    <div className="mx-auto flex h-screen max-w-md flex-col bg-[var(--color-app-bg)] text-[var(--color-text)]">
+    <div className="mx-auto flex h-dvh max-w-md flex-col bg-[var(--color-app-bg)] text-[var(--color-text)]">
       <header className="flex flex-none items-center gap-3 px-4 pt-6 pb-2">
         <img
           src={`${import.meta.env.BASE_URL}emblem.png`}
@@ -235,6 +255,7 @@ function App() {
                 members={members}
                 isAdmin={isAdmin}
                 canManageStats={canManageStats}
+                equalMode={equalMode}
                 onSaveMember={updateMember}
                 onAddMember={addMember}
                 onDeleteMember={deleteMember}
@@ -244,7 +265,7 @@ function App() {
               />
             </div>
             <div data-scroll-page className="h-full w-[25%] flex-none overflow-y-auto overscroll-contain">
-              <TeamBuilderPage members={members} />
+              <TeamBuilderPage members={members} equalMode={equalMode} pins={teamPins} />
             </div>
             <div data-scroll-page className="h-full w-[25%] flex-none overflow-y-auto overscroll-contain">
               <BoardPage
@@ -267,12 +288,16 @@ function App() {
                 error={eventsError}
                 votes={votes}
                 locations={eventLocations}
+                equalMode={equalMode}
+                teamPins={teamPins}
                 onCreateEvent={createEventAndRefetchLocations}
                 onUpdateEvent={updateEventAndRefetchLocations}
                 onDeleteEvent={deleteEvent}
                 onSetEventConfirmed={setEventConfirmed}
-                onSaveEventTeams={saveEventTeams}
-                onResetEventTeams={resetEventTeams}
+                onAddMatch={addMatch}
+                onSaveMatchTeams={saveMatchTeams}
+                onResetMatchTeams={resetMatchTeams}
+                onDeleteMatch={deleteMatch}
                 onCastVote={castVote}
                 onRetractVote={retractVote}
               />
@@ -308,7 +333,15 @@ function App() {
       )}
 
       {showAdminPage && (
-        <AdminPage members={members} onClose={() => setShowAdminPage(false)} onUnlinkMember={unlinkMember} />
+        <AdminPage
+          members={members}
+          equalMode={equalMode}
+          onToggleEqualMode={toggleEqualMode}
+          teamPins={teamPins}
+          onChangeTeamPin={updateTeamPin}
+          onClose={() => setShowAdminPage(false)}
+          onUnlinkMember={unlinkMember}
+        />
       )}
     </div>
   )

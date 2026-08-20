@@ -2,6 +2,7 @@
 import { inputClass, Select } from './memberFormFields'
 import { TIME_OPTIONS, toHHMM } from '../utils/time'
 import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
+import { DISTORTED_TIER_LABEL } from '../utils/tierStyles'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import { useDismissAnimation } from '../hooks/useDismissAnimation'
 import { useSwipeToClose } from '../hooks/useSwipeToClose'
@@ -9,7 +10,7 @@ import AttendeeChip from './AttendeeChip'
 
 const DEFAULT_MERC_TIER = 'C'
 
-export default function EventForm({ members, locations, event, onClose, onSubmit }) {
+export default function EventForm({ members, locations, equalMode, event, onClose, onSubmit }) {
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
   const sheetRef = useRef(null)
@@ -199,11 +200,11 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
                 }}
                 className={`flex-1 ${inputClass}`}
               />
-              <div className="w-20 flex-none">
+              <div className="w-24 flex-none">
                 <Select value={extraTier} onChange={(e) => setExtraTier(e.target.value)}>
-                  {TIER_ORDER.map((t) => (
+                  {(equalMode ? ['S', DEFAULT_MERC_TIER] : TIER_ORDER).map((t) => (
                     <option key={t} value={t}>
-                      {TIER_NAMES[t]}
+                      {equalMode && t !== 'S' ? DISTORTED_TIER_LABEL : TIER_NAMES[t]}
                     </option>
                   ))}
                 </Select>
@@ -225,7 +226,7 @@ export default function EventForm({ members, locations, event, onClose, onSubmit
                     onClick={() => removeExtra(i)}
                     className="rounded-full bg-accent-500/20 px-3 py-1 text-xs text-accent-300 ring-1 ring-accent-400/50"
                   >
-                    {extra.name} ({TIER_NAMES[extra.tier]}) ✕
+                    {extra.name} ({equalMode && extra.tier !== 'S' ? DISTORTED_TIER_LABEL : TIER_NAMES[extra.tier]}) ✕
                   </button>
                 ))}
               </div>

@@ -6,6 +6,16 @@ export const TIER_STYLES = {
   D: { badge: 'bg-cyan-400 text-cyan-950', ring: 'ring-cyan-400/60', glow: 'from-cyan-500/20', accent: '#22d3ee' },
 }
 
+// 평등 모드일 때 S급 외 멤버에게 실제 등급 대신 보여주는 가상의 등급(실 데이터는 안 바꿈).
+// 기존 5개 등급 색과 안 헷갈리게 무채색 계열로 따로 둠
+export const DISTORTED_TIER_LABEL = 'DISTORTED'
+export const DISTORTED_TIER_STYLE = {
+  badge: 'bg-slate-400 text-slate-950',
+  ring: 'ring-slate-400/60',
+  glow: 'from-slate-500/20',
+  accent: '#94a3b8',
+}
+
 export const STAT_LABELS = {
   passing: '패스',
   dribbling: '드리블',

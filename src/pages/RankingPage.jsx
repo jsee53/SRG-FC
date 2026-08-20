@@ -13,6 +13,7 @@ export default function RankingPage({
   members,
   isAdmin,
   canManageStats,
+  equalMode,
   onSaveMember,
   onAddMember,
   onDeleteMember,
@@ -21,7 +22,7 @@ export default function RankingPage({
   bestPlayerCountByMemberId,
 }) {
   const [filter, setFilter] = useState('전체')
-  const [sortBy, setSortBy] = useState('name')
+  const [sortBy, setSortBy] = useState('overall')
   const [selectedMember, setSelectedMember] = useState(null)
   const [editingMember, setEditingMember] = useState(null)
   const [editingStatsMember, setEditingStatsMember] = useState(null)
@@ -35,7 +36,7 @@ export default function RankingPage({
     setSelectedMember(updated ?? null)
   }, [members])
 
-  const ordered = sortMembersFlat(filterMembers(members, filter), sortBy)
+  const ordered = sortMembersFlat(filterMembers(members, filter), sortBy, equalMode)
   const selectedIndex = selectedMember ? ordered.findIndex((m) => m.id === selectedMember.id) : -1
   const aceId = getAceMemberId(members)
 
@@ -64,6 +65,7 @@ export default function RankingPage({
         members={members}
         filter={filter}
         sortBy={sortBy}
+        equalMode={equalMode}
         selectedId={selectedMember?.id}
         aceId={aceId}
         onSelect={setSelectedMember}
@@ -79,6 +81,7 @@ export default function RankingPage({
         isAce={selectedMember?.id === aceId}
         isAdmin={isAdmin}
         canManageStats={canManageStats}
+        equalMode={equalMode}
         onEdit={() => setEditingMember(selectedMember)}
         onEditStats={() => setEditingStatsMember(selectedMember)}
         attendanceCount={selectedMember ? attendanceCountByMemberId[selectedMember.id] ?? 0 : 0}

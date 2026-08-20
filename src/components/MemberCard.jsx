@@ -1,14 +1,16 @@
 ﻿import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
-import { TIER_STYLES, STAT_LABELS } from '../utils/tierStyles'
+import { TIER_STYLES, STAT_LABELS, DISTORTED_TIER_LABEL, DISTORTED_TIER_STYLE } from '../utils/tierStyles'
 import { TIER_NAMES } from '../utils/tier'
 import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
 import Avatar from './Avatar'
 
-export default function MemberCard({ member, rank, active, isAce, onClick }) {
-  const tier = TIER_STYLES[member.tier] ?? TIER_STYLES.D
+export default function MemberCard({ member, rank, equalMode, active, isAce, onClick }) {
+  const hideStats = equalMode && member.tier !== 'S'
+  const tier = hideStats ? DISTORTED_TIER_STYLE : TIER_STYLES[member.tier] ?? TIER_STYLES.D
+  const tierLabel = hideStats ? DISTORTED_TIER_LABEL : TIER_NAMES[member.tier]
   const ovr = calcOvr(member)
-  const meta = [member.positions.join('/'), `${calcAge(member.birthYear)}세`, `OVR ${ovr}`]
+  const meta = [member.positions.join('/'), `${calcAge(member.birthYear)}세`, !hideStats && `OVR ${ovr}`]
     .filter(Boolean)
     .join(' · ')
 
@@ -52,27 +54,31 @@ export default function MemberCard({ member, rank, active, isAce, onClick }) {
             <span className="truncate font-semibold">{member.name}</span>
             {member.number != null && <span className="text-sm text-[var(--color-text-muted)]">No.{member.number}</span>}
             <span className={`ml-auto flex-none rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>
-              {TIER_NAMES[member.tier]}
+              {tierLabel}
             </span>
           </div>
           <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{meta}</div>
         </div>
       </div>
 
-      <div className="relative mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-        {Object.entries(STAT_LABELS).map(([key, label]) => (
-          <div key={key} className="flex items-center gap-1.5">
-            <span className="w-14 flex-none whitespace-nowrap text-[var(--color-text-muted)]">{label}</span>
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--color-surface-soft)]">
-              <div
-                className="h-full rounded-full bg-[var(--color-surface-strong)]"
-                style={{ width: `${member.stats[key]}%` }}
-              />
+      {hideStats ? (
+        <p className="relative mt-3 text-center text-xs font-semibold tracking-wider text-[var(--color-text-muted)]">Undefined</p>
+      ) : (
+        <div className="relative mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+          {Object.entries(STAT_LABELS).map(([key, label]) => (
+            <div key={key} className="flex items-center gap-1.5">
+              <span className="w-14 flex-none whitespace-nowrap text-[var(--color-text-muted)]">{label}</span>
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--color-surface-soft)]">
+                <div
+                  className="h-full rounded-full bg-[var(--color-surface-strong)]"
+                  style={{ width: `${member.stats[key]}%` }}
+                />
+              </div>
+              <span className="w-5 flex-none text-right text-[var(--color-text-soft)]">{member.stats[key]}</span>
             </div>
-            <span className="w-5 flex-none text-right text-[var(--color-text-soft)]">{member.stats[key]}</span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </button>
   )
 }
