@@ -5,6 +5,7 @@ import Avatar from './Avatar'
 
 export default function TeamResultCard({ index, team, equalMode }) {
   const sortedMembers = [...team.members].sort((a, b) => powerScore(b) - powerScore(a))
+  const avgScore = team.members.length ? Math.round(team.totalScore / team.members.length) : 0
 
   function tierBadge(entry) {
     const hidden = equalMode && entry.tier !== 'S'
@@ -19,7 +20,9 @@ export default function TeamResultCard({ index, team, equalMode }) {
     <div className="rounded-2xl bg-[var(--color-surface)] p-4 ring-1 ring-[var(--color-border)]">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">{index + 1}팀</h3>
-        <span className="text-xs text-[var(--color-text-muted)]">{team.members.length}명</span>
+        <span className="text-xs text-[var(--color-text-muted)]">
+          {team.members.length}명{!equalMode && ` · 평균 능력치 ${avgScore}`}
+        </span>
       </div>
 
       <div className="mt-3 flex flex-col gap-2">
