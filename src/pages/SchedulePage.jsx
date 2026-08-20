@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import EventForm from '../components/EventForm'
 import EventCard from '../components/EventCard'
 import EventTeamBuilderModal from '../components/EventTeamBuilderModal'
@@ -14,18 +14,22 @@ export default function SchedulePage({
   error,
   votes,
   locations,
+  equalMode,
+  teamPins,
   onCreateEvent,
   onUpdateEvent,
   onDeleteEvent,
   onSetEventConfirmed,
-  onSaveEventTeams,
-  onResetEventTeams,
+  onAddMatch,
+  onSaveMatchTeams,
+  onResetMatchTeams,
+  onDeleteMatch,
   onCastVote,
   onRetractVote,
 }) {
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
-  const [buildingTeamsFor, setBuildingTeamsFor] = useState(null)
+  const [buildingTeams, setBuildingTeams] = useState(null) // { event, match: { id, matchNumber } }
 
   async function handleDelete(id) {
     if (!window.confirm('이 일정을 삭제할까요?')) return
@@ -64,8 +68,10 @@ export default function SchedulePage({
               onEdit={setEditingEvent}
               onDelete={handleDelete}
               onToggleConfirmed={(ev) => onSetEventConfirmed(ev.id, !ev.confirmed)}
-              onBuildTeams={setBuildingTeamsFor}
-              onResetTeams={onResetEventTeams}
+              onAddMatch={onAddMatch}
+              onBuildTeams={(ev, match) => setBuildingTeams({ event: ev, match })}
+              onResetTeams={onResetMatchTeams}
+              onDeleteMatch={onDeleteMatch}
               onCastVote={onCastVote}
               onRetractVote={onRetractVote}
             />
@@ -78,6 +84,7 @@ export default function SchedulePage({
         <EventForm
           members={members}
           locations={locations}
+          equalMode={equalMode}
           onClose={() => setShowForm(false)}
           onSubmit={(date, start, end, location, attendees) =>
             onCreateEvent(session, date, start, end, location, attendees)
@@ -89,6 +96,7 @@ export default function SchedulePage({
         <EventForm
           members={members}
           locations={locations}
+          equalMode={equalMode}
           event={editingEvent}
           onClose={() => setEditingEvent(null)}
           onSubmit={(date, start, end, location, attendees) =>
@@ -97,12 +105,15 @@ export default function SchedulePage({
         />
       )}
 
-      {buildingTeamsFor && (
+      {buildingTeams && (
         <EventTeamBuilderModal
-          event={buildingTeamsFor}
+          event={buildingTeams.event}
+          matchNumber={buildingTeams.match.matchNumber}
           members={members}
-          onClose={() => setBuildingTeamsFor(null)}
-          onSave={onSaveEventTeams}
+          equalMode={equalMode}
+          teamPins={teamPins}
+          onClose={() => setBuildingTeams(null)}
+          onSave={(assignments) => onSaveMatchTeams(buildingTeams.match.id, assignments)}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { calcOvr } from '../utils/calcOvr'
 import { calcAge } from '../utils/age'
-import { TIER_STYLES } from '../utils/tierStyles'
+import { TIER_STYLES, DISTORTED_TIER_LABEL, DISTORTED_TIER_STYLE } from '../utils/tierStyles'
 import { TIER_NAMES } from '../utils/tier'
 import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
@@ -36,6 +36,7 @@ export default function MemberDetail({
   isAce,
   isAdmin,
   canManageStats,
+  equalMode,
   onEdit,
   onEditStats,
   attendanceCount,
@@ -70,9 +71,11 @@ export default function MemberDetail({
     setIsNavigating(prevMemberId !== null)
     setPrevMemberId(member.id)
   }
-  const tier = TIER_STYLES[member.tier] ?? TIER_STYLES.D
+  const hideStats = equalMode && member.tier !== 'S'
+  const tier = hideStats ? DISTORTED_TIER_STYLE : TIER_STYLES[member.tier] ?? TIER_STYLES.D
+  const tierLabel = hideStats ? DISTORTED_TIER_LABEL : TIER_NAMES[member.tier]
   const ovr = calcOvr(member)
-  const meta = [member.positions.join('/'), `${calcAge(member.birthYear)}세`, `OVR ${ovr}`]
+  const meta = [member.positions.join('/'), `${calcAge(member.birthYear)}세`, !hideStats && `OVR ${ovr}`]
     .filter(Boolean)
     .join(' · ')
   const activityMeta = [`참석 ${attendanceCount ?? 0}회`, `POM ${bestPlayerCount ?? 0}회`].join(' · ')
@@ -216,7 +219,7 @@ export default function MemberDetail({
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold">{member.name}</h2>
                 {member.number != null && <span className="text-[var(--color-text-muted)]">No.{member.number}</span>}
-                <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>{TIER_NAMES[member.tier]}</span>
+                <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>{tierLabel}</span>
               </div>
               <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">{meta}</p>
               <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">{activityMeta}</p>
@@ -231,9 +234,13 @@ export default function MemberDetail({
             </div>
           )}
 
-          <div className="mt-4">
-            <RadarChart stats={member.stats} color={tier.accent} />
-          </div>
+          {hideStats ? (
+            <p className="mt-6 text-center text-base font-semibold tracking-wider text-[var(--color-text-muted)]">Undefined</p>
+          ) : (
+            <div className="mt-4">
+              <RadarChart stats={member.stats} color={tier.accent} />
+            </div>
+          )}
         </div>
       </div>
     </div>

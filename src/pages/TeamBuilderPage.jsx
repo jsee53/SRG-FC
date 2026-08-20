@@ -8,7 +8,9 @@ import TeamResultSkeleton from '../components/TeamResultSkeleton'
 
 const GENERATE_DELAY_MS = 500
 
-export default function TeamBuilderPage({ members }) {
+// 팀 고정 배정(pins)은 관리자 도구에서만 설정 가능 — 여긴 누구나 쓸 수 있는 탭이라
+// 그 설정을 그대로 받아서 "팀 나누기" 계산에만 반영함(편집 UI는 없음)
+export default function TeamBuilderPage({ members, equalMode, pins }) {
   const [attendingIds, setAttendingIds] = useState(new Set())
   const [mercenaries, setMercenaries] = useState([])
   const [teamCount, setTeamCount] = useState(3)
@@ -22,7 +24,8 @@ export default function TeamBuilderPage({ members }) {
 
   const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name, 'ko'))
   const attendingMembers = members.filter((m) => attendingIds.has(m.id))
-  const totalAttendees = attendingMembers.length + mercenaries.length
+  const allAttendees = [...attendingMembers, ...mercenaries]
+  const totalAttendees = allAttendees.length
   const canGenerate = totalAttendees >= teamCount
 
   function toggleAttendee(id) {
@@ -48,13 +51,18 @@ export default function TeamBuilderPage({ members }) {
   function handleGenerate() {
     setIsGenerating(true)
     timeoutRef.current = setTimeout(() => {
-      setTeams(buildBalancedTeams([...attendingMembers, ...mercenaries], teamCount))
+      setTeams(buildBalancedTeams(allAttendees, teamCount, equalMode, pins))
       setIsGenerating(false)
     }, GENERATE_DELAY_MS)
   }
 
   return (
     <>
+      {equalMode && (
+        <p className="mx-4 mt-3 rounded-lg bg-[var(--color-surface-soft)] px-3 py-2 text-center text-xs text-[var(--color-text-muted)]">
+          평등 모드 — S급 외 무작위 배정
+        </p>
+      )}
       <div className="px-4 py-3">
         <h2 className="mb-2 text-sm font-semibold text-[var(--color-text-soft)]">참석자 선택 ({totalAttendees}명)</h2>
         <div className="grid grid-cols-2 gap-2">
@@ -63,13 +71,14 @@ export default function TeamBuilderPage({ members }) {
               key={member.id}
               member={member}
               selected={attendingIds.has(member.id)}
+              equalMode={equalMode}
               onToggle={() => toggleAttendee(member.id)}
             />
           ))}
         </div>
       </div>
 
-      <MercenaryForm mercenaries={mercenaries} onAdd={handleAddMercenaries} onRemove={handleRemoveMercenary} />
+      <MercenaryForm mercenaries={mercenaries} onAdd={handleAddMercenaries} onRemove={handleRemoveMercenary} equalMode={equalMode} />
 
       <TeamSettings
         teamCount={teamCount}
@@ -108,7 +117,7 @@ export default function TeamBuilderPage({ members }) {
       {teams && !isGenerating && (
         <div className="flex flex-col gap-3 px-4 pb-6">
           {teams.map((team, i) => (
-            <TeamResultCard key={i} index={i} team={team} />
+            <TeamResultCard key={i} index={i} team={team} equalMode={equalMode} />
           ))}
           <button
             type="button"

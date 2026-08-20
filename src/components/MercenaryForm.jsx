@@ -1,10 +1,24 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { TIER_ORDER, TIER_NAMES } from '../utils/tier'
-import { TIER_STYLES } from '../utils/tierStyles'
+import { TIER_STYLES, DISTORTED_TIER_LABEL, DISTORTED_TIER_STYLE } from '../utils/tierStyles'
 
-export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
+const DEFAULT_NON_S_TIER = 'C'
+
+export default function MercenaryForm({ mercenaries, onAdd, onRemove, equalMode }) {
   const [count, setCount] = useState(1)
   const [tier, setTier] = useState('C')
+
+  // 평등 모드에서는 S급 여부만 실력 배정에 영향을 주니, 나머지 등급을 다 보여줄 필요 없이
+  // "S" / "DISTORTED" 둘 중 하나만 고르게 함
+  const tierOptions = equalMode ? ['S', DEFAULT_NON_S_TIER] : TIER_ORDER
+
+  function tierLabel(t) {
+    return equalMode && t !== 'S' ? DISTORTED_TIER_LABEL : TIER_NAMES[t]
+  }
+
+  function tierStyle(t) {
+    return equalMode && t !== 'S' ? DISTORTED_TIER_STYLE : TIER_STYLES[t]
+  }
 
   return (
     <div className="px-4 py-3">
@@ -30,16 +44,16 @@ export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
         </div>
 
         <div className="flex flex-1 gap-1 overflow-x-auto">
-          {TIER_ORDER.map((t) => (
+          {tierOptions.map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => setTier(t)}
               className={`flex-none rounded-full px-3 py-1 text-xs font-bold transition-colors ${
-                tier === t ? TIER_STYLES[t].badge : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft-hover)]'
+                tier === t ? tierStyle(t).badge : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft-hover)]'
               }`}
             >
-              {TIER_NAMES[t]}
+              {tierLabel(t)}
             </button>
           ))}
         </div>
@@ -58,9 +72,9 @@ export default function MercenaryForm({ mercenaries, onAdd, onRemove }) {
           {mercenaries.map((merc) => (
             <span
               key={merc.id}
-              className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${TIER_STYLES[merc.tier].badge}`}
+              className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${tierStyle(merc.tier).badge}`}
             >
-              {merc.label} · {TIER_NAMES[merc.tier]}
+              {merc.label} · {tierLabel(merc.tier)}
               <button
                 type="button"
                 onClick={() => onRemove(merc.id)}

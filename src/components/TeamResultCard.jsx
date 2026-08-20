@@ -1,18 +1,25 @@
-﻿import { TIER_STYLES } from '../utils/tierStyles'
+﻿import { TIER_STYLES, DISTORTED_TIER_LABEL, DISTORTED_TIER_STYLE } from '../utils/tierStyles'
 import { TIER_NAMES } from '../utils/tier'
 import { powerScore } from '../utils/teamBuilder'
 import Avatar from './Avatar'
 
-export default function TeamResultCard({ index, team }) {
+export default function TeamResultCard({ index, team, equalMode }) {
   const sortedMembers = [...team.members].sort((a, b) => powerScore(b) - powerScore(a))
+
+  function tierBadge(entry) {
+    const hidden = equalMode && entry.tier !== 'S'
+    const style = hidden ? DISTORTED_TIER_STYLE : TIER_STYLES[entry.tier]
+    const label = hidden ? DISTORTED_TIER_LABEL : TIER_NAMES[entry.tier]
+    return (
+      <span className={`flex-none rounded px-1.5 py-0.5 text-xs font-bold ${style.badge}`}>{label}</span>
+    )
+  }
 
   return (
     <div className="rounded-2xl bg-[var(--color-surface)] p-4 ring-1 ring-[var(--color-border)]">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">{index + 1}팀</h3>
-        <span className="text-xs text-[var(--color-text-muted)]">
-          {team.members.length}명 · 평균 능력치 {team.avgScore}
-        </span>
+        <span className="text-xs text-[var(--color-text-muted)]">{team.members.length}명</span>
       </div>
 
       <div className="mt-3 flex flex-col gap-2">
@@ -23,17 +30,13 @@ export default function TeamResultCard({ index, team }) {
                 용병
               </div>
               <span className="flex-1 text-[var(--color-text-soft)]">{entry.label}</span>
-              <span className={`flex-none rounded px-1.5 py-0.5 text-xs font-bold ${TIER_STYLES[entry.tier].badge}`}>
-                {TIER_NAMES[entry.tier]}
-              </span>
+              {tierBadge(entry)}
             </div>
           ) : (
             <div key={entry.id} className="flex items-center gap-2 text-sm">
               <Avatar name={entry.name} size="xs" />
               <span className="flex-1 truncate">{entry.name}</span>
-              <span className={`flex-none rounded px-1.5 py-0.5 text-xs font-bold ${TIER_STYLES[entry.tier].badge}`}>
-                {TIER_NAMES[entry.tier]}
-              </span>
+              {tierBadge(entry)}
             </div>
           ),
         )}

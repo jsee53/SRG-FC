@@ -1,16 +1,30 @@
-﻿import { useRef } from 'react'
+﻿import { useRef, useState } from 'react'
 import LinkedAccountsSection from '../components/LinkedAccountsSection'
 import AccountsSection from '../components/AccountsSection'
+import TeamPinEditor from '../components/TeamPinEditor'
 import { useAccounts } from '../hooks/useAccounts'
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import { useDismissAnimation } from '../hooks/useDismissAnimation'
 import { useSwipeToClose } from '../hooks/useSwipeToClose'
 
-export default function AdminPage({ members, onClose, onUnlinkMember }) {
+// 팀 짜기 탭이 보통 2~3팀으로 나누니, 고정 배정도 그 범위만큼만 미리 준비해둠
+// (더 많은 팀으로 나누면 그 이상 팀 번호로 고정된 사람은 자동으로 무시됨)
+const MAX_PIN_TEAM_COUNT = 3
+
+export default function AdminPage({
+  members,
+  equalMode,
+  onToggleEqualMode,
+  teamPins,
+  onChangeTeamPin,
+  onClose,
+  onUnlinkMember,
+}) {
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
   const sheetRef = useRef(null)
   const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
+  const [togglingEqualMode, setTogglingEqualMode] = useState(false)
   const {
     accounts,
     loading,
@@ -22,6 +36,14 @@ export default function AdminPage({ members, onClose, onUnlinkMember }) {
     grantStatsManager,
     revokeStatsManager,
   } = useAccounts()
+
+  async function handleToggleEqualMode() {
+    setTogglingEqualMode(true)
+    await onToggleEqualMode()
+    setTogglingEqualMode(false)
+  }
+
+  const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name, 'ko'))
 
   return (
     <div
@@ -55,6 +77,39 @@ export default function AdminPage({ members, onClose, onUnlinkMember }) {
         </div>
 
         <div className="mt-4 flex flex-col gap-5">
+          <div className="rounded-xl bg-[var(--color-surface-soft)] p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold">평등 모드</p>
+                <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                  S급 외 능력치를 랭킹에서 숨기고, 팀 짜기는 S급만 실력 기준으로 배정하고 나머지는 무작위로 나눠요.
+                  데이터는 그대로 유지되니 언제든 다시 꺼서 원래대로 되돌릴 수 있어요.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleEqualMode}
+                disabled={togglingEqualMode}
+                aria-pressed={equalMode}
+                className={`relative h-7 w-12 flex-none overflow-hidden rounded-full transition-colors disabled:opacity-40 ${
+                  equalMode ? 'bg-accent-400' : 'bg-[var(--color-surface-soft-hover)]'
+                }`}
+              >
+                <span
+                  className="absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-[var(--color-sheet)] transition-transform"
+                  style={{ transform: equalMode ? 'translateX(20px)' : 'translateX(0)' }}
+                />
+              </button>
+            </div>
+          </div>
+
+          <TeamPinEditor
+            entries={sortedMembers}
+            teamCount={MAX_PIN_TEAM_COUNT}
+            pins={teamPins}
+            onChangePin={onChangeTeamPin}
+          />
+
           <LinkedAccountsSection members={members} onUnlink={onUnlinkMember} />
           <AccountsSection
             accounts={accounts}
