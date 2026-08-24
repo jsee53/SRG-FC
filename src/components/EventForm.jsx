@@ -179,6 +179,7 @@ export default function EventForm({ members, locations, equalMode, event, onClos
                   key={member.id}
                   member={member}
                   selected={attendingIds.has(member.id)}
+                  equalMode={equalMode}
                   onToggle={() => toggleMember(member.id)}
                 />
               ))}

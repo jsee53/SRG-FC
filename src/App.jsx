@@ -73,6 +73,10 @@ function App() {
     await setAppSetting('team_pins', next)
   }
 
+  async function clearTeamPins() {
+    await setAppSetting('team_pins', {})
+  }
+
   async function createEventAndRefetchLocations(...args) {
     const result = await createEvent(...args)
     if (!result.error) await refetchLocations()
@@ -339,6 +343,7 @@ function App() {
           onToggleEqualMode={toggleEqualMode}
           teamPins={teamPins}
           onChangeTeamPin={updateTeamPin}
+          onClearTeamPins={clearTeamPins}
           onClose={() => setShowAdminPage(false)}
           onUnlinkMember={unlinkMember}
         />

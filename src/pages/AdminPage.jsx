@@ -17,6 +17,7 @@ export default function AdminPage({
   onToggleEqualMode,
   teamPins,
   onChangeTeamPin,
+  onClearTeamPins,
   onClose,
   onUnlinkMember,
 }) {
@@ -25,6 +26,7 @@ export default function AdminPage({
   const sheetRef = useRef(null)
   const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
   const [togglingEqualMode, setTogglingEqualMode] = useState(false)
+  const [clearingPins, setClearingPins] = useState(false)
   const {
     accounts,
     loading,
@@ -41,6 +43,13 @@ export default function AdminPage({
     setTogglingEqualMode(true)
     await onToggleEqualMode()
     setTogglingEqualMode(false)
+  }
+
+  async function handleClearTeamPins() {
+    if (!window.confirm('설정해둔 팀 고정 배정을 모두 초기화할까요?')) return
+    setClearingPins(true)
+    await onClearTeamPins()
+    setClearingPins(false)
   }
 
   const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name, 'ko'))
@@ -108,6 +117,8 @@ export default function AdminPage({
             teamCount={MAX_PIN_TEAM_COUNT}
             pins={teamPins}
             onChangePin={onChangeTeamPin}
+            onClearAll={handleClearTeamPins}
+            clearing={clearingPins}
           />
 
           <LinkedAccountsSection members={members} onUnlink={onUnlinkMember} />
