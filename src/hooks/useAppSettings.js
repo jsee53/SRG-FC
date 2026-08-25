@@ -28,5 +28,5 @@ export function useAppSettings() {
     return { error }
   }, [refetch])
 
-  return { settings, loading, setSetting }
+  return { settings, loading, refetch, setSetting }
 }

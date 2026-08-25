@@ -30,6 +30,7 @@ function App() {
     members,
     loading,
     error,
+    refetch: refetchMembers,
     updateMember,
     addMember,
     deleteMember,
@@ -43,6 +44,7 @@ function App() {
     events,
     loading: eventsLoading,
     error: eventsError,
+    refetch: refetchEvents,
     createEvent,
     updateEvent,
     deleteEvent,
@@ -53,11 +55,37 @@ function App() {
     deleteMatch,
   } = useEvents()
   const { locations: eventLocations, refetchLocations } = useEventLocations()
-  const { votes, castVote, retractVote } = useBestPlayerVotes()
+  const { votes, castVote, retractVote, refetch: refetchVotes } = useBestPlayerVotes()
   const { theme: accentTheme, changeTheme: changeAccentTheme } = useAccentTheme()
-  const { settings: appSettings, setSetting: setAppSetting } = useAppSettings()
+  const { settings: appSettings, setSetting: setAppSetting, refetch: refetchSettings } = useAppSettings()
   const equalMode = appSettings.equal_mode === true
   const teamPins = appSettings.team_pins ?? {}
+
+  const [refreshing, setRefreshing] = useState(false)
+
+  async function refetchAll() {
+    await Promise.all([refetchMembers(), refetchEvents(), refetchLocations(), refetchVotes(), refetchSettings()])
+  }
+
+  async function handleManualRefresh() {
+    setRefreshing(true)
+    await refetchAll()
+    setRefreshing(false)
+  }
+
+  // PWA는 브라우저 새로고침 제스처가 없어서, 백그라운드에 있다가 다시 열렸을 때(예: 홈 화면에서
+  // 재진입) 그 사이 실패했거나 오래된 데이터를 자동으로 한 번 다시 불러와줌
+  useEffect(() => {
+    function handleWake() {
+      if (document.visibilityState === 'visible') refetchAll()
+    }
+    document.addEventListener('visibilitychange', handleWake)
+    window.addEventListener('focus', handleWake)
+    return () => {
+      document.removeEventListener('visibilitychange', handleWake)
+      window.removeEventListener('focus', handleWake)
+    }
+  }, [])
 
   async function toggleEqualMode() {
     await setAppSetting('equal_mode', !equalMode)
@@ -202,6 +230,15 @@ function App() {
           <h1 className="text-2xl font-bold">SRG-FC</h1>
           <p className="text-sm text-[var(--color-text-muted)]">새릉골 풋살 동호회</p>
         </div>
+        <button
+          type="button"
+          onClick={handleManualRefresh}
+          disabled={refreshing}
+          aria-label="새로고침"
+          className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--color-surface-soft)] text-sm text-[var(--color-text-soft)] transition-colors hover:bg-[var(--color-surface-soft-hover)] disabled:opacity-40"
+        >
+          <span className={`inline-block ${refreshing ? 'animate-spin' : ''}`}>↻</span>
+        </button>
         {session ? (
           <button
             type="button"
@@ -240,7 +277,19 @@ function App() {
       </nav>
 
       {showLoader && <p className="px-4 py-16 text-center text-[var(--color-text-muted)]">불러오는 중...</p>}
-      {showError && <p className="px-4 py-16 text-center text-red-400">멤버 정보를 불러오지 못했어요. 새로고침 해주세요.</p>}
+      {showError && (
+        <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
+          <p className="text-red-400">멤버 정보를 불러오지 못했어요.</p>
+          <button
+            type="button"
+            onClick={handleManualRefresh}
+            disabled={refreshing}
+            className="rounded-full bg-accent-400 px-4 py-2 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
+          >
+            {refreshing ? '다시 시도 중...' : '다시 시도'}
+          </button>
+        </div>
+      )}
 
       {/* transform은 조상에 걸리면 하위의 position:fixed 모달들이 뷰포트가 아니라
           이 요소를 기준으로 배치되어버리는 CSS 부작용이 있어서, 슬라이드는 transform이 아니라
@@ -304,6 +353,7 @@ function App() {
                 onDeleteMatch={deleteMatch}
                 onCastVote={castVote}
                 onRetractVote={retractVote}
+                onRetry={refetchEvents}
               />
             </div>
           </div>
