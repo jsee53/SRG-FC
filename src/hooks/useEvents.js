@@ -57,6 +57,7 @@ export function useEvents() {
   // 매번 loading을 true로 켰다 끄면 그 사이 목록 전체가 잠깐 사라졌다가 다시 그려지면서
   // 펼쳐둔 카드의 로컬 state(펼침 여부 등)가 초기화돼버림 — 최초 로딩 때만 loading을 씀
   const hasLoadedOnce = useRef(false)
+  const retryCountRef = useRef(0)
 
   const refetch = useCallback(async () => {
     if (!hasLoadedOnce.current) setLoading(true)
@@ -73,6 +74,7 @@ export function useEvents() {
     } else {
       setEvents(data.map(mapRow))
       hasLoadedOnce.current = true
+      retryCountRef.current = 0
     }
     setLoading(false)
   }, [])
@@ -80,6 +82,15 @@ export function useEvents() {
   useEffect(() => {
     refetch()
   }, [refetch])
+
+  // PWA로 열었을 때 타이밍 문제로 최초 로딩이 실패하는 경우가 있어서, 잠깐 기다렸다가
+  // 몇 번 자동으로 다시 시도함(무한 재시도는 방지) — useMembers.js와 같은 패턴
+  useEffect(() => {
+    if (!error || retryCountRef.current >= 3) return
+    retryCountRef.current += 1
+    const timer = setTimeout(() => refetch(), retryCountRef.current * 1500)
+    return () => clearTimeout(timer)
+  }, [error, refetch])
 
   const createEvent = useCallback(async (session, eventDate, startTime, endTime, location, attendees) => {
     const { data: event, error: insertError } = await supabase

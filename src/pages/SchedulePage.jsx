@@ -26,6 +26,7 @@ export default function SchedulePage({
   onDeleteMatch,
   onCastVote,
   onRetractVote,
+  onRetry,
 }) {
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
@@ -52,7 +53,18 @@ export default function SchedulePage({
       </div>
 
       {loading && <p className="py-16 text-center text-[var(--color-text-muted)]">불러오는 중...</p>}
-      {error && <p className="py-16 text-center text-red-400">일정을 불러오지 못했어요.</p>}
+      {error && (
+        <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <p className="text-red-400">일정을 불러오지 못했어요.</p>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="rounded-full bg-accent-400 px-4 py-2 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300"
+          >
+            다시 시도
+          </button>
+        </div>
+      )}
 
       {!loading && !error && (
         <div className="flex flex-col gap-3">

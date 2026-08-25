@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 function mapRow(row) {
@@ -21,6 +21,7 @@ export function useMembers() {
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const retryCountRef = useRef(0)
 
   // useCallback으로 고정된 함수라 아래 useEffect 의존성 배열이 매 렌더마다 바뀌지 않음
   const refetch = useCallback(async () => {
@@ -31,6 +32,7 @@ export function useMembers() {
       setError(fetchError)
     } else {
       setMembers(data.map(mapRow))
+      retryCountRef.current = 0
     }
     setLoading(false)
   }, [])
@@ -38,6 +40,15 @@ export function useMembers() {
   useEffect(() => {
     refetch()
   }, [refetch])
+
+  // PWA로 열었을 때 세션 복구보다 이 요청이 먼저 나가는 등 타이밍 문제로 최초 로딩이
+  // 실패하는 경우가 있어서, 잠깐 기다렸다가 몇 번 자동으로 다시 시도함(무한 재시도는 방지)
+  useEffect(() => {
+    if (!error || retryCountRef.current >= 3) return
+    retryCountRef.current += 1
+    const timer = setTimeout(() => refetch(), retryCountRef.current * 1500)
+    return () => clearTimeout(timer)
+  }, [error, refetch])
 
   const updateMember = useCallback(async (id, updates) => {
     const { error: updateError } = await supabase
