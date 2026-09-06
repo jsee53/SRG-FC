@@ -21,7 +21,7 @@ export default function SchedulePage({
   onDeleteEvent,
   onSetEventConfirmed,
   onAddMatch,
-  onSaveMatchTeams,
+  onSaveMatchParticipants,
   onResetMatchTeams,
   onDeleteMatch,
   onCastVote,
@@ -120,12 +120,12 @@ export default function SchedulePage({
       {buildingTeams && (
         <EventTeamBuilderModal
           event={buildingTeams.event}
-          matchNumber={buildingTeams.match.matchNumber}
+          match={buildingTeams.match}
           members={members}
           equalMode={equalMode}
           teamPins={teamPins}
           onClose={() => setBuildingTeams(null)}
-          onSave={(assignments) => onSaveMatchTeams(buildingTeams.match.id, assignments)}
+          onSave={(participants) => onSaveMatchParticipants(buildingTeams.event.id, buildingTeams.match.id, participants)}
         />
       )}
     </div>
