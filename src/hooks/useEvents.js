@@ -29,24 +29,56 @@ function mapRow(row) {
   }
 }
 
-// attendees: [{ name, memberId, tier }] — memberId는 로스터 멤버면 채워지고, 용병 자유 입력이면 null(+ 밸런싱용 tier)
-// 주의: 이 함수는 기존 참석자 행을 지우고 새로 만들기 때문에, 이미 저장된 팀 배정/베스트 플레이어 투표는
-// event_attendees 삭제에 cascade로 같이 지워짐(경기도 마찬가지)
 async function saveLocationIfNew(location) {
   if (!location) return
   await supabase.from('event_locations').upsert({ name: location }, { onConflict: 'name', ignoreDuplicates: true })
 }
 
-async function replaceAttendees(eventId, attendees) {
-  const { error: deleteError } = await supabase.from('event_attendees').delete().eq('event_id', eventId)
-  if (deleteError) return { error: deleteError }
+// attendees: [{ name, memberId, tier }] — memberId는 로스터 멤버면 채워지고, 용병 자유 입력이면 null(+ 밸런싱용 tier)
+// 한 일정에 경기가 여러 개 있으면 1경기 때 뛴 사람이 2경기엔 빠지고 새 사람이 들어오는 식으로
+// 경기마다 참석자가 달라질 수 있는데, 예전처럼 참석자 행을 통째로 지우고 새로 만들면 이미 저장된
+// 팀 배정/투표가 cascade로 다 같이 날아가버림. 그래서 그대로 남아있는 사람은 건드리지 않고
+// (같은 사람 판정: 로스터 멤버는 member_id, 용병은 이름) 빠진 사람만 지우고 새로 온 사람만 추가함
+async function syncAttendees(eventId, attendees) {
+  const { data: existing, error: fetchError } = await supabase
+    .from('event_attendees')
+    .select('id, member_id, name, tier')
+    .eq('event_id', eventId)
+  if (fetchError) return { error: fetchError }
 
-  if (attendees.length === 0) return { error: null }
+  const keyOfInput = (a) => (a.memberId != null ? `m:${a.memberId}` : `x:${a.name}`)
+  const keyOfRow = (row) => (row.member_id != null ? `m:${row.member_id}` : `x:${row.name}`)
 
-  const { error: insertError } = await supabase.from('event_attendees').insert(
-    attendees.map((a) => ({ event_id: eventId, name: a.name, member_id: a.memberId ?? null, tier: a.tier ?? null }))
-  )
-  return { error: insertError }
+  const existingByKey = new Map(existing.map((row) => [keyOfRow(row), row]))
+  const nextKeys = new Set(attendees.map(keyOfInput))
+
+  const toDelete = existing.filter((row) => !nextKeys.has(keyOfRow(row))).map((row) => row.id)
+  const toInsert = []
+  const toUpdate = []
+  for (const a of attendees) {
+    const row = existingByKey.get(keyOfInput(a))
+    if (!row) {
+      toInsert.push(a)
+    } else if ((a.tier ?? null) !== (row.tier ?? null)) {
+      toUpdate.push({ id: row.id, tier: a.tier ?? null })
+    }
+  }
+
+  if (toDelete.length > 0) {
+    const { error } = await supabase.from('event_attendees').delete().in('id', toDelete)
+    if (error) return { error }
+  }
+  if (toInsert.length > 0) {
+    const { error } = await supabase.from('event_attendees').insert(
+      toInsert.map((a) => ({ event_id: eventId, name: a.name, member_id: a.memberId ?? null, tier: a.tier ?? null }))
+    )
+    if (error) return { error }
+  }
+  for (const u of toUpdate) {
+    const { error } = await supabase.from('event_attendees').update({ tier: u.tier }).eq('id', u.id)
+    if (error) return { error }
+  }
+  return { error: null }
 }
 
 export function useEvents() {
@@ -107,7 +139,7 @@ export function useEvents() {
 
     if (insertError) return { error: insertError }
 
-    const { error: attendeesError } = await replaceAttendees(event.id, attendees)
+    const { error: attendeesError } = await syncAttendees(event.id, attendees)
     if (attendeesError) return { error: attendeesError }
 
     await saveLocationIfNew(location)
@@ -123,7 +155,7 @@ export function useEvents() {
 
     if (updateError) return { error: updateError }
 
-    const { error: attendeesError } = await replaceAttendees(id, attendees)
+    const { error: attendeesError } = await syncAttendees(id, attendees)
     if (attendeesError) return { error: attendeesError }
 
     await saveLocationIfNew(location)
@@ -160,7 +192,7 @@ export function useEvents() {
     return { matchId: data, error: rpcError }
   }, [refetch])
 
-  // assignments: [{ attendeeId, teamIndex }]
+  // assignments: [{ attendeeId, teamIndex }] — attendeeId는 이미 등록된 event_attendees 행이어야 함
   const saveMatchTeams = useCallback(async (matchId, assignments) => {
     const { error: deleteError } = await supabase.from('match_team_assignments').delete().eq('match_id', matchId)
     if (deleteError) return { error: deleteError }
@@ -175,6 +207,33 @@ export function useEvents() {
     await refetch()
     return { error: null }
   }, [refetch])
+
+  // participants: [{ attendeeId?, name, memberId?, tier?, teamIndex }] — attendeeId가 없으면
+  // (이 경기에 처음 참여하는 사람이면) event_attendees에 먼저 등록해서 새 id를 받아온 뒤 배정에 씀.
+  // 경기마다 참석자 구성이 달라질 수 있게(1경기 뛴 사람이 2경기엔 빠지고 새 사람이 들어오는 식)
+  // 팀 짜기 화면에서 그때그때 참석자를 고를 수 있도록 지원하는 저장 함수
+  const saveMatchParticipants = useCallback(async (eventId, matchId, participants) => {
+    const toInsert = participants.filter((p) => p.attendeeId == null)
+    let insertedRows = []
+    if (toInsert.length > 0) {
+      const { data, error: insertError } = await supabase
+        .from('event_attendees')
+        .insert(toInsert.map((p) => ({ event_id: eventId, name: p.name, member_id: p.memberId ?? null, tier: p.tier ?? null })))
+        .select('id')
+      if (insertError) return { error: insertError }
+      insertedRows = data
+    }
+
+    let insertIndex = 0
+    const assignments = participants.map((p) => {
+      if (p.attendeeId != null) return { attendeeId: p.attendeeId, teamIndex: p.teamIndex }
+      const row = insertedRows[insertIndex]
+      insertIndex += 1
+      return { attendeeId: row.id, teamIndex: p.teamIndex }
+    })
+
+    return saveMatchTeams(matchId, assignments)
+  }, [saveMatchTeams])
 
   const resetMatchTeams = useCallback(async (matchId) => {
     const { error: rpcError } = await supabase.rpc('reset_match_teams', { target_match_id: matchId })
@@ -204,7 +263,7 @@ export function useEvents() {
     deleteEvent,
     setEventConfirmed,
     addMatch,
-    saveMatchTeams,
+    saveMatchParticipants,
     resetMatchTeams,
     deleteMatch,
   }

@@ -63,7 +63,7 @@ export default function EventCard({
     const { matchId, error } = await onAddMatch(event.id)
     setCreatingMatch(false)
     if (error || matchId == null) return
-    onBuildTeams(event, { id: matchId, matchNumber: activeMatch.matchNumber })
+    onBuildTeams(event, { id: matchId, matchNumber: activeMatch.matchNumber, assignments: [] })
   }
 
   async function handleAddMatch() {
