@@ -53,10 +53,32 @@ export default function EventForm({ members, locations, equalMode, event, onClos
     setExtras((prev) => prev.filter((_, i) => i !== index))
   }
 
+  // 참석자를 체크 해제해서 빼면 그 사람의 event_attendees 행 자체가 지워지는데, 이건 그 사람이
+  // 들어가 있던 모든 경기의 팀 배정까지 cascade로 같이 지워버림. 경기별로 참석자를 다르게 하고
+  // 싶을 땐 여기서 빼지 말고 해당 경기의 "팀 짜기"에서 체크만 해제하면 되므로, 여기서 진짜로
+  // 빼려는(=이미 팀 배정된) 사람이 있으면 저장 전에 확인을 한 번 받음
+  function findRemovedAttendeesWithTeams() {
+    const nextExtraNames = new Set(extras.map((ex) => ex.name))
+    const removed = (event?.attendees ?? []).filter((a) =>
+      a.memberId != null ? !attendingIds.has(a.memberId) : !nextExtraNames.has(a.name)
+    )
+    return removed.filter((a) => (event?.matches ?? []).some((m) => m.assignments.some((asn) => asn.attendeeId === a.id)))
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
-    setSubmitting(true)
     setError('')
+
+    const removedWithTeams = findRemovedAttendeesWithTeams()
+    if (removedWithTeams.length > 0) {
+      const names = removedWithTeams.map((a) => a.name).join(', ')
+      const proceed = window.confirm(
+        `${names}님은 이미 경기에 팀이 배정되어 있어요. 참석자에서 빼면 그 경기의 팀 배정도 같이 사라집니다.\n\n계속 진행할까요? (특정 경기에서만 빼고 싶으면 취소하고, 해당 경기의 "팀 짜기"에서 참석자 체크만 해제해주세요)`
+      )
+      if (!proceed) return
+    }
+
+    setSubmitting(true)
 
     const memberAttendees = members
       .filter((m) => attendingIds.has(m.id))
