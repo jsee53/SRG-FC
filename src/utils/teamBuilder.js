@@ -34,6 +34,17 @@ function pickTargetTeam(teams) {
   return candidates[Math.floor(Math.random() * candidates.length)]
 }
 
+// S급은 실력이 아니라 "팀마다 몇 명씩 받았는지" 그 수부터 맞추고(한쪽 팀에 S급이 몰리지
+// 않게), 수가 같은 팀이 여럿이면 그중 현재 총점이 더 낮은 팀으로 보내 밸런스에 보탬
+function pickLeastLoadedSTeam(teams, sCounts) {
+  const openIndexes = teams.map((_, i) => i).filter((i) => teams[i].members.length < teams[i].size)
+  const minCount = Math.min(...openIndexes.map((i) => sCounts[i]))
+  const leastLoaded = openIndexes.filter((i) => sCounts[i] === minCount)
+  const minScore = Math.min(...leastLoaded.map((i) => teams[i].totalScore))
+  const candidates = leastLoaded.filter((i) => teams[i].totalScore <= minScore + BALANCE_TOLERANCE)
+  return candidates[Math.floor(Math.random() * candidates.length)]
+}
+
 // 관리자 도구는 실제 로스터 멤버 id로 고정 배정을 저장하는데, 일정의 팀 짜기 모달은
 // 참석자 객체의 id/attendeeId를 event_attendees 행의 id로 덮어써서 쓰고 있어서(팀 저장용),
 // memberId가 있으면 그걸 최우선으로 써야 관리자 도구에서 정한 고정 배정과 키가 맞음
@@ -41,11 +52,12 @@ export function pinKey(entry) {
   return String(entry.memberId ?? entry.attendeeId ?? entry.id)
 }
 
-// equalMode: S급만 실력 기준으로 각 팀에 고르게 배정하고, 나머지는 실력을 아예 안 보고
-// 팀 자리만 맞춰서 무작위로 배정함 (관리자가 "평등 모드"를 켰을 때 사용).
-// pins: { [pinKey]: teamIndex } — 관리자가 특정 인원을 특정 팀에 미리 고정해두면, 그 인원은
-// 그대로 배정하고 totalScore에도 반영해서 남은 인원 배정이 그 고정분까지 감안해 밸런스를 맞춤
-export function buildBalancedTeams(attendees, teamCount, equalMode = false, pins = {}) {
+// 평등 모드는 화면에 능력치를 안 보여줄 뿐, 팀을 실제로 공정하게 나누는 로직은 평등 모드
+// 여부와 상관없이 항상 똑같이 동작함: S급은 팀마다 수를 고르게 나누고(실력으로 쏠리지 않게),
+// 나머지는 실제 능력치로 밸런스를 맞춤. pins: { [pinKey]: teamIndex } — 관리자가 특정 인원을
+// 특정 팀에 미리 고정해두면, 그 인원은 그대로 배정하고 totalScore에도 반영해서 남은 인원
+// 배정이 그 고정분까지 감안해 밸런스를 맞춤
+export function buildBalancedTeams(attendees, teamCount, pins = {}) {
   const sizes = computeTeamSizes(attendees.length, teamCount)
   const teams = sizes.map((size) => ({ size, members: [], totalScore: 0 }))
 
@@ -67,35 +79,19 @@ export function buildBalancedTeams(attendees, teamCount, equalMode = false, pins
   }
 
   const unpinned = attendees.filter((entry) => !pinnedKeys.has(pinKey(entry)))
-  const pool = equalMode ? unpinned.filter((a) => a.tier === 'S') : unpinned
-  const rest = equalMode ? unpinned.filter((a) => a.tier !== 'S') : []
+  const sPool = unpinned.filter((a) => a.tier === 'S')
+  const restPool = unpinned.filter((a) => a.tier !== 'S')
 
-  if (equalMode) {
-    // 평등 모드에서는 실력(점수)이 아니라 "S급 인원 수"만 팀마다 고르게 맞추면 되는데,
-    // 고정 배정(pins)으로 이미 채워진 다른 등급 인원의 실제 점수가 totalScore에 들어가 있어서
-    // 점수 기준으로 팀을 고르면 그 점수에 끌려가 특정 팀이 계속 S급을 못 받는 문제가 있었음
-    const sCounts = teams.map((team) => team.members.filter((m) => m.tier === 'S').length)
-    for (const entry of shuffle(pool)) {
-      const openIndexes = teams.map((_, i) => i).filter((i) => teams[i].members.length < teams[i].size)
-      const minCount = Math.min(...openIndexes.map((i) => sCounts[i]))
-      const candidates = openIndexes.filter((i) => sCounts[i] === minCount)
-      const targetIndex = candidates[Math.floor(Math.random() * candidates.length)]
-      teams[targetIndex].members.push(entry)
-      teams[targetIndex].totalScore += powerScore(entry)
-      sCounts[targetIndex] += 1
-    }
-  } else {
-    const sorted = shuffle(pool).sort((a, b) => powerScore(b) - powerScore(a))
-    for (const entry of sorted) {
-      const target = pickTargetTeam(teams)
-      target.members.push(entry)
-      target.totalScore += powerScore(entry)
-    }
+  const sCounts = teams.map((team) => team.members.filter((m) => m.tier === 'S').length)
+  for (const entry of shuffle(sPool).sort((a, b) => powerScore(b) - powerScore(a))) {
+    const targetIndex = pickLeastLoadedSTeam(teams, sCounts)
+    teams[targetIndex].members.push(entry)
+    teams[targetIndex].totalScore += powerScore(entry)
+    sCounts[targetIndex] += 1
   }
 
-  for (const entry of shuffle(rest)) {
-    const open = teams.filter((team) => team.members.length < team.size)
-    const target = open[Math.floor(Math.random() * open.length)]
+  for (const entry of shuffle(restPool).sort((a, b) => powerScore(b) - powerScore(a))) {
+    const target = pickTargetTeam(teams)
     target.members.push(entry)
     target.totalScore += powerScore(entry)
   }

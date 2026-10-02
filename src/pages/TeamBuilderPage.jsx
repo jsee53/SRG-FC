@@ -51,7 +51,7 @@ export default function TeamBuilderPage({ members, equalMode, pins }) {
   function handleGenerate() {
     setIsGenerating(true)
     timeoutRef.current = setTimeout(() => {
-      setTeams(buildBalancedTeams(allAttendees, teamCount, equalMode, pins))
+      setTeams(buildBalancedTeams(allAttendees, teamCount, pins))
       setIsGenerating(false)
     }, GENERATE_DELAY_MS)
   }
@@ -60,7 +60,7 @@ export default function TeamBuilderPage({ members, equalMode, pins }) {
     <>
       {equalMode && (
         <p className="mx-4 mt-3 rounded-lg bg-[var(--color-surface-soft)] px-3 py-2 text-center text-xs text-[var(--color-text-muted)]">
-          평등 모드 — S급 외 무작위 배정
+          평등 모드 — 능력치 비공개
         </p>
       )}
       <div className="px-4 py-3">

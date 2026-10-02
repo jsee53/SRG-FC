@@ -898,6 +898,45 @@ $$ language plpgsql security definer;
 alter table event_attendees drop column if exists team_index;
 
 -- =============================================================
+-- Phase 9: 등급/능력치 재조정 (2026-10 기준 명단)
+-- 등급별 1위 평균 능력치 S=95/A=93/B=91/C=89/D=87(등급마다 2점 하락),
+-- 같은 등급 내 순위마다 능력치 총합 2점 하락. 스탯 순서 중 공백=완전히 동일,
+-- '>'=2점 차이, '>>'=5점 차이로 역산(목표 총합이 6으로 안 나눠지면 반올림 처리)
+-- =============================================================
+update members set name = '류태오' where id = 17; -- 류태오 → 이름 오타 수정
+
+update members set tier = 'S', stats = '{"passing":95,"dribbling":95,"physical":95,"defense":95,"stamina":95,"finishing":95}'::jsonb where id = 1; -- 강민재 S1
+update members set tier = 'S', stats = '{"passing":94,"dribbling":94,"physical":94,"defense":94,"stamina":96,"finishing":94}'::jsonb where id = 3; -- 도경민 S2
+update members set tier = 'S', stats = '{"passing":95,"dribbling":95,"physical":93,"defense":94,"stamina":93,"finishing":95}'::jsonb where id = 2; -- 문도윤 S3
+update members set tier = 'S', stats = '{"passing":94,"dribbling":94,"physical":94,"defense":94,"stamina":94,"finishing":94}'::jsonb where id = 4; -- 천성우 S4
+update members set tier = 'S', stats = '{"passing":93,"dribbling":97,"physical":92,"defense":92,"stamina":92,"finishing":97}'::jsonb where id = 6; -- 유건우 S5
+update members set tier = 'S', stats = '{"passing":92,"dribbling":92,"physical":92,"defense":97,"stamina":97,"finishing":92}'::jsonb where id = 5; -- 남기현 S6
+
+update members set tier = 'A', stats = '{"passing":89,"dribbling":94,"physical":94,"defense":94,"stamina":94,"finishing":94}'::jsonb where id = 7; -- 백시온 A1
+update members set tier = 'A', stats = '{"passing":97,"dribbling":92,"physical":92,"defense":92,"stamina":92,"finishing":92}'::jsonb where id = 8; -- 신우진 A2
+update members set tier = 'A', stats = '{"passing":91,"dribbling":93,"physical":93,"defense":93,"stamina":93,"finishing":93}'::jsonb where id = 12; -- 배서진 A3
+update members set tier = 'A', stats = '{"passing":91,"dribbling":91,"physical":91,"defense":96,"stamina":91,"finishing":91}'::jsonb where id = 11; -- 봉진우 A4
+update members set tier = 'A', stats = '{"passing":92,"dribbling":92,"physical":92,"defense":90,"stamina":90,"finishing":92}'::jsonb where id = 10; -- 차무진 A5
+update members set tier = 'A', stats = '{"passing":92,"dribbling":90,"physical":92,"defense":92,"stamina":90,"finishing":90}'::jsonb where id = 14; -- 권예준 A6 (B에서 승급)
+update members set tier = 'A', stats = '{"passing":89,"dribbling":94,"physical":89,"defense":89,"stamina":89,"finishing":94}'::jsonb where id = 9; -- 임하준 A7
+
+update members set tier = 'B', stats = '{"passing":92,"dribbling":92,"physical":90,"defense":92,"stamina":88,"finishing":92}'::jsonb where id = 15; -- 곽동하 B1
+update members set tier = 'B', stats = '{"passing":95,"dribbling":90,"physical":90,"defense":90,"stamina":90,"finishing":90}'::jsonb where id = 16; -- 석태민 B2
+update members set tier = 'B', stats = '{"passing":90,"dribbling":90,"physical":89,"defense":90,"stamina":90,"finishing":95}'::jsonb where id = 13; -- 구본혁 B3
+update members set tier = 'B', stats = '{"passing":89,"dribbling":91,"physical":89,"defense":91,"stamina":89,"finishing":91}'::jsonb where id = 22; -- 황도현 B4 (C에서 승급)
+update members set tier = 'B', stats = '{"passing":93,"dribbling":91,"physical":87,"defense":89,"stamina":89,"finishing":89}'::jsonb where id = 20; -- 변재원 B5 (C에서 승급)
+update members set tier = 'B', stats = '{"passing":94,"dribbling":89,"physical":89,"defense":89,"stamina":89,"finishing":87}'::jsonb where id = 17; -- 류태오 B6
+
+update members set tier = 'C', stats = '{"passing":89,"dribbling":89,"physical":89,"defense":89,"stamina":89,"finishing":89}'::jsonb where id = 18; -- 전승현 C1 (B에서 강등)
+update members set tier = 'C', stats = '{"passing":89,"dribbling":89,"physical":89,"defense":89,"stamina":89,"finishing":88}'::jsonb where id = 19; -- 육상현 C2
+update members set tier = 'C', stats = '{"passing":88,"dribbling":88,"physical":88,"defense":88,"stamina":88,"finishing":89}'::jsonb where id = 23; -- 노지환 C3
+update members set tier = 'C', stats = '{"passing":88,"dribbling":88,"physical":88,"defense":88,"stamina":88,"finishing":88}'::jsonb where id = 21; -- 표지성 C4
+update members set tier = 'C', stats = '{"passing":88,"dribbling":88,"physical":88,"defense":88,"stamina":88,"finishing":87}'::jsonb where id = 24; -- 하윤석 C5
+
+update members set tier = 'D', stats = '{"passing":87,"dribbling":87,"physical":87,"defense":87,"stamina":87,"finishing":87}'::jsonb where id = 25; -- 엄재희 D1
+update members set tier = 'D', stats = '{"passing":87,"dribbling":87,"physical":87,"defense":87,"stamina":87,"finishing":86}'::jsonb where id = 26; -- 피성준 D2
+
+-- =============================================================
 -- 관리자 등록 방법 (이 SQL을 실행한 뒤, 별도로 진행하세요)
 -- =============================================================
 -- 1. Supabase 대시보드 > Authentication > Users > Add user 에서

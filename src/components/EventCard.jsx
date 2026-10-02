@@ -15,6 +15,7 @@ const VIRTUAL_FIRST_MATCH = { id: null, matchNumber: 1, assignments: [] }
 export default function EventCard({
   event,
   session,
+  members,
   myMemberId,
   isAdmin,
   canManageEvents,
@@ -24,6 +25,7 @@ export default function EventCard({
   onToggleConfirmed,
   onAddMatch,
   onBuildTeams,
+  onMoveAttendee,
   onResetTeams,
   onDeleteMatch,
   onCastVote,
@@ -240,9 +242,12 @@ export default function EventCard({
             <EventTeams
               event={event}
               match={activeMatch}
+              members={members}
               myMemberId={myMemberId}
               voterId={session?.user?.id}
               votes={votes}
+              isAdmin={isAdmin}
+              onMoveAttendee={onMoveAttendee}
               onCastVote={onCastVote}
               onRetractVote={onRetractVote}
             />

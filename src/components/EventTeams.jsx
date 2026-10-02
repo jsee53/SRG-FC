@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { powerScore } from '../utils/teamBuilder'
 
 function groupByTeam(assignments) {
   const groups = new Map()
@@ -9,12 +10,32 @@ function groupByTeam(assignments) {
   return [...groups.entries()].sort(([a], [b]) => a - b)
 }
 
-export default function EventTeams({ event, match, myMemberId, voterId, votes, onCastVote, onRetractVote }) {
+// 팀 짜기 결과 화면(TeamResultCard)과 같은 기준(실력순)으로 보이게 함 — 안 그러면 팀을
+// 수동으로 옮겼을 때 그 사람이 저장 순서상 맨 끝에 붙어 보여서 뒤죽박죽으로 보임
+function resolvePowerScore(attendee, members) {
+  if (!attendee) return 0
+  if (attendee.memberId == null) return powerScore({ isMercenary: true, tier: attendee.tier ?? 'C' })
+  const member = members.find((m) => m.id === attendee.memberId)
+  if (!member) return powerScore({ isMercenary: true, tier: attendee.tier ?? 'C' })
+  return powerScore(member)
+}
+
+export default function EventTeams({ event, match, members, myMemberId, voterId, votes, isAdmin, onMoveAttendee, onCastVote, onRetractVote }) {
   const [pendingId, setPendingId] = useState(null)
+  const [movingId, setMovingId] = useState(null)
   const attendeeById = new Map(event.attendees.map((a) => [a.id, a]))
   const teamGroups = groupByTeam(match.assignments)
 
   if (teamGroups.length === 0) return null
+
+  const teamIndexes = teamGroups.map(([teamIndex]) => teamIndex)
+
+  // 관리자가 전체를 다시 안 짜고 한 명만 다른 팀으로 바로 옮길 때 씀
+  async function handleMove(attendeeId, newTeamIndex) {
+    setMovingId(attendeeId)
+    await onMoveAttendee(match.id, attendeeId, newTeamIndex)
+    setMovingId(null)
+  }
 
   const myAttendee = myMemberId != null ? event.attendees.find((a) => a.memberId === myMemberId) : null
   const myAssignment = myAttendee ? match.assignments.find((a) => a.attendeeId === myAttendee.id) : null
@@ -37,6 +58,11 @@ export default function EventTeams({ event, match, myMemberId, voterId, votes, o
         const isMyTeam = canVote && myAssignment.teamIndex === teamIndex
         const teamVotes = votes.filter((v) => v.matchId === match.id && v.teamIndex === teamIndex)
         const myVote = teamVotes.find((v) => v.voterId === voterId)
+        const sortedAssignments = [...assignments].sort(
+          (a, b) =>
+            resolvePowerScore(attendeeById.get(b.attendeeId), members) -
+            resolvePowerScore(attendeeById.get(a.attendeeId), members)
+        )
 
         return (
           <div key={teamIndex} className="rounded-xl bg-[var(--color-surface-faint)] p-3">
@@ -44,7 +70,7 @@ export default function EventTeams({ event, match, myMemberId, voterId, votes, o
               {teamIndex + 1}팀 ({assignments.length}명)
             </p>
             <div className="flex flex-col gap-1.5">
-              {assignments.map(({ attendeeId }) => {
+              {sortedAssignments.map(({ attendeeId }) => {
                 const attendee = attendeeById.get(attendeeId)
                 if (!attendee) return null
                 const voteCount = teamVotes.filter((v) => v.votedAttendeeId === attendeeId).length
@@ -70,6 +96,20 @@ export default function EventTeams({ event, match, myMemberId, voterId, votes, o
                         >
                           {isMyVote ? '투표 취소' : '투표'}
                         </button>
+                      )}
+                      {isAdmin && (
+                        <select
+                          value={teamIndex}
+                          disabled={movingId === attendeeId}
+                          onChange={(e) => handleMove(attendeeId, Number(e.target.value))}
+                          className="rounded-full bg-[var(--color-surface-soft)] px-1.5 py-0.5 text-xs text-[var(--color-text-soft)] disabled:opacity-40"
+                        >
+                          {teamIndexes.map((idx) => (
+                            <option key={idx} value={idx}>
+                              {idx + 1}팀
+                            </option>
+                          ))}
+                        </select>
                       )}
                     </div>
                   </div>

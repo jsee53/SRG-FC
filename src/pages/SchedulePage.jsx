@@ -22,6 +22,7 @@ export default function SchedulePage({
   onSetEventConfirmed,
   onAddMatch,
   onSaveMatchParticipants,
+  onMoveAttendee,
   onResetMatchTeams,
   onDeleteMatch,
   onCastVote,
@@ -73,6 +74,7 @@ export default function SchedulePage({
               key={event.id}
               event={event}
               session={session}
+              members={members}
               myMemberId={myMemberId}
               isAdmin={isAdmin}
               canManageEvents={canManageEvents}
@@ -82,6 +84,7 @@ export default function SchedulePage({
               onToggleConfirmed={(ev) => onSetEventConfirmed(ev.id, !ev.confirmed)}
               onAddMatch={onAddMatch}
               onBuildTeams={(ev, match) => setBuildingTeams({ event: ev, match })}
+              onMoveAttendee={onMoveAttendee}
               onResetTeams={onResetMatchTeams}
               onDeleteMatch={onDeleteMatch}
               onCastVote={onCastVote}
