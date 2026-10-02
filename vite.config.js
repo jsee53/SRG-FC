@@ -10,8 +10,11 @@ const isVercelOrNetlify = process.env.VERCEL || process.env.NETLIFY
 export default defineConfig({
   base: isVercelOrNetlify ? '/' : '/SRG-FC/',
   plugins: [react(), tailwindcss()],
-  // host: true로 0.0.0.0에 바인딩해서 같은 와이파이의 휴대폰 등에서 PC의 LAN IP로 접속 테스트 가능하게 함
+  // host: true로 0.0.0.0에 바인딩해서 같은 와이파이의 휴대폰 등에서 PC의 LAN IP로 접속 테스트 가능하게 함.
+  // 기본 포트(5173)는 다른 프로젝트도 같이 쓰고 있어서 매번 5174, 5175...로 밀려나며 충돌하니
+  // 이 프로젝트 전용 포트를 지정함 (그 포트도 마침 사용 중이면 vite가 자동으로 다음 번호로 넘어감)
   server: {
     host: true,
+    port: 5271,
   },
 })

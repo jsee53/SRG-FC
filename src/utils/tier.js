@@ -1,4 +1,4 @@
-import { calcOvr } from './calcOvr'
+import { statTotal } from './calcOvr'
 
 export const TIER_ORDER = ['S', 'A', 'B', 'C', 'D']
 
@@ -17,17 +17,19 @@ export function compareByName(a, b) {
 }
 
 // 종합 점수(OVR) 높은 순. 수동 등수는 더 이상 쓰지 않음.
-// equalMode에서는 S급끼리만 실제 OVR로 비교하고, 나머지는 전부 동등하게 취급해서
+// 화면엔 반올림한 평균(calcOvr)을 보여주지만, 정렬은 반올림 전 총합(statTotal)으로 비교함 —
+// 그래야 평균으로는 반올림돼서 같아 보이는 근소한 차이(예: 총합 2점 차)도 정렬에 그대로 반영됨
+// equalMode에서는 S급끼리만 실제 능력치로 비교하고, 나머지는 전부 동등하게 취급해서
 // 이름순으로만 나뉘게 함 (S급이 항상 위로 오는 건 유지)
 export function compareByOvr(a, b, equalMode = false) {
   if (equalMode) {
     const aIsS = a.tier === 'S'
     const bIsS = b.tier === 'S'
-    if (aIsS && bIsS) return calcOvr(b) - calcOvr(a)
+    if (aIsS && bIsS) return statTotal(b) - statTotal(a)
     if (aIsS !== bIsS) return aIsS ? -1 : 1
     return compareByName(a, b)
   }
-  return calcOvr(b) - calcOvr(a)
+  return statTotal(b) - statTotal(a)
 }
 
 export function filterMembers(members, filter) {

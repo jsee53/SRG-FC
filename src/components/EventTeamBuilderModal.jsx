@@ -121,7 +121,7 @@ export default function EventTeamBuilderModal({ event, match, members, equalMode
     setIsGenerating(true)
     setError('')
     timeoutRef.current = setTimeout(() => {
-      setTeams(buildBalancedTeams(participants, teamCount, equalMode, teamPins))
+      setTeams(buildBalancedTeams(participants, teamCount, teamPins))
       setIsGenerating(false)
     }, GENERATE_DELAY_MS)
   }
@@ -180,7 +180,7 @@ export default function EventTeamBuilderModal({ event, match, members, equalMode
 
         {equalMode && (
           <p className="mt-3 rounded-lg bg-[var(--color-surface-soft)] px-3 py-2 text-center text-xs text-[var(--color-text-muted)]">
-            평등 모드 — S급 외 무작위 배정
+            평등 모드 — 능력치 비공개
           </p>
         )}
 

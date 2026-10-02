@@ -192,6 +192,19 @@ export function useEvents() {
     return { matchId: data, error: rpcError }
   }, [refetch])
 
+  // 관리자가 팀 배정 한 명만 다른 팀으로 수동으로 옮길 때 씀 (전체를 다시 짜지 않고 한 명만 이동)
+  const moveAttendeeTeam = useCallback(async (matchId, attendeeId, teamIndex) => {
+    const { error } = await supabase
+      .from('match_team_assignments')
+      .update({ team_index: teamIndex })
+      .eq('match_id', matchId)
+      .eq('attendee_id', attendeeId)
+    if (!error) {
+      await refetch()
+    }
+    return { error }
+  }, [refetch])
+
   // assignments: [{ attendeeId, teamIndex }] — attendeeId는 이미 등록된 event_attendees 행이어야 함
   const saveMatchTeams = useCallback(async (matchId, assignments) => {
     const { error: deleteError } = await supabase.from('match_team_assignments').delete().eq('match_id', matchId)
@@ -264,6 +277,7 @@ export function useEvents() {
     setEventConfirmed,
     addMatch,
     saveMatchParticipants,
+    moveAttendeeTeam,
     resetMatchTeams,
     deleteMatch,
   }

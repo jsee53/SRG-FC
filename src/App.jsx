@@ -51,6 +51,7 @@ function App() {
     setEventConfirmed,
     addMatch,
     saveMatchParticipants,
+    moveAttendeeTeam,
     resetMatchTeams,
     deleteMatch,
   } = useEvents()
@@ -349,6 +350,7 @@ function App() {
                 onSetEventConfirmed={setEventConfirmed}
                 onAddMatch={addMatch}
                 onSaveMatchParticipants={saveMatchParticipants}
+                onMoveAttendee={moveAttendeeTeam}
                 onResetMatchTeams={resetMatchTeams}
                 onDeleteMatch={deleteMatch}
                 onCastVote={castVote}
