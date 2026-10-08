@@ -6,10 +6,11 @@ import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
 import Avatar from './Avatar'
 
 // brandMode: 이름순 정렬일 때만 켜짐 — 순위가 아니라 명단이라서, 등급색 대신 동호회
-// 유니폼 색으로 카드를 통일함(등급 배지는 색만 바뀌고 글자는 S/A/B/C/D 그대로 유지)
+// 유니폼 색으로 카드를 통일함(평등 모드로 가려진 멤버도 색은 똑같이 핑크로 맞추되,
+// 등급이 뭔지는 여전히 안 보여줘야 하니 뱃지 글자는 DISTORTED로 그대로 둠)
 export default function MemberCard({ member, rank, equalMode, brandMode, active, isAce, onClick }) {
   const hideStats = equalMode && member.tier !== 'S'
-  const tier = hideStats ? DISTORTED_TIER_STYLE : brandMode ? UNIFORM_STYLE : TIER_STYLES[member.tier] ?? TIER_STYLES.D
+  const tier = brandMode ? UNIFORM_STYLE : hideStats ? DISTORTED_TIER_STYLE : TIER_STYLES[member.tier] ?? TIER_STYLES.D
   const tierLabel = hideStats ? DISTORTED_TIER_LABEL : brandMode ? member.tier : TIER_NAMES[member.tier]
   const ovr = calcOvr(member)
   const meta = [member.positions.join('/'), `${calcAge(member.birthYear)}세`, !hideStats && `OVR ${ovr}`]
@@ -27,7 +28,7 @@ export default function MemberCard({ member, rank, equalMode, brandMode, active,
       }`}
     >
       <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tier.glow} to-transparent`} />
-      {hideStats && (
+      {hideStats && !brandMode && (
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
           style={{
@@ -64,16 +65,18 @@ export default function MemberCard({ member, rank, equalMode, brandMode, active,
           <div className="flex items-center gap-2">
             <span className="truncate font-semibold">{member.name}</span>
             {member.number != null && <span className="text-sm text-[var(--color-text-muted)]">No.{member.number}</span>}
-            <span
-              className={`ml-auto flex flex-none items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}
-            >
-              {hideStats && (
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-2.5 w-2.5">
-                  <path d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h1Zm2 0h8V8a4 4 0 1 0-8 0v2Z" />
-                </svg>
-              )}
-              {tierLabel}
-            </span>
+            {!brandMode && (
+              <span
+                className={`ml-auto flex flex-none items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}
+              >
+                {hideStats && (
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-2.5 w-2.5">
+                    <path d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h1Zm2 0h8V8a4 4 0 1 0-8 0v2Z" />
+                  </svg>
+                )}
+                {tierLabel}
+              </span>
+            )}
           </div>
           <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{meta}</div>
         </div>

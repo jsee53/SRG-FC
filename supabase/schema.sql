@@ -898,8 +898,8 @@ $$ language plpgsql security definer;
 alter table event_attendees drop column if exists team_index;
 
 -- =============================================================
--- Phase 9: 등급/능력치 재조정 (2026-10 기준 명단, v2)
--- A급은 6명(임하준는 B급으로), 등급 경계(예: S급 꼴찌 vs A급 1위)는 평균 능력치 2점 차이,
+-- Phase 9: 등급/능력치 재조정 (2026-10 기준 명단, v3)
+-- S/A/B/C 등급 전부 6명씩(임하준는 A→B로, 류태오는 B→C로), 등급 경계(예: S급 꼴찌 vs A급 1위)는 평균 능력치 2점 차이,
 -- 같은 등급 내 순위 한 칸 차이는 평균 능력치 0.5점 차이(= 총합 3점 차이)로 재계산.
 -- 스탯 순서 중 공백=완전히 동일, '>'=2점 차이, '>>'=5점 차이로 역산
 -- (목표 총합이 6으로 안 나눠지면 반올림하고, 반올림 때문에 순위 역전/동점이 나는 경우만
@@ -927,13 +927,13 @@ update members set tier = 'B', stats = '{"passing":89,"dribbling":84,"physical":
 update members set tier = 'B', stats = '{"passing":84,"dribbling":84,"physical":84,"defense":84,"stamina":84,"finishing":89}'::jsonb where id = 13; -- 구본혁 B4
 update members set tier = 'B', stats = '{"passing":83,"dribbling":85,"physical":83,"defense":85,"stamina":83,"finishing":85}'::jsonb where id = 22; -- 황도현 B5
 update members set tier = 'B', stats = '{"passing":87,"dribbling":85,"physical":81,"defense":83,"stamina":83,"finishing":83}'::jsonb where id = 20; -- 변재원 B6
-update members set tier = 'B', stats = '{"passing":88,"dribbling":83,"physical":83,"defense":83,"stamina":83,"finishing":81}'::jsonb where id = 17; -- 류태오 B7
 
-update members set tier = 'C', stats = '{"passing":81,"dribbling":81,"physical":81,"defense":81,"stamina":81,"finishing":81}'::jsonb where id = 18; -- 전승현 C1
-update members set tier = 'C', stats = '{"passing":81,"dribbling":81,"physical":81,"defense":81,"stamina":81,"finishing":80}'::jsonb where id = 19; -- 육상현 C2
-update members set tier = 'C', stats = '{"passing":80,"dribbling":80,"physical":80,"defense":80,"stamina":80,"finishing":80}'::jsonb where id = 23; -- 노지환 C3
-update members set tier = 'C', stats = '{"passing":80,"dribbling":80,"physical":80,"defense":80,"stamina":80,"finishing":79}'::jsonb where id = 21; -- 표지성 C4
-update members set tier = 'C', stats = '{"passing":79,"dribbling":79,"physical":79,"defense":79,"stamina":79,"finishing":79}'::jsonb where id = 24; -- 하윤석 C5
+update members set tier = 'C', stats = '{"passing":86,"dribbling":81,"physical":81,"defense":81,"stamina":81,"finishing":79}'::jsonb where id = 17; -- 류태오 C1 (B는 6명만, B7이었던 류태오가 강등)
+update members set tier = 'C', stats = '{"passing":81,"dribbling":81,"physical":81,"defense":81,"stamina":81,"finishing":81}'::jsonb where id = 18; -- 전승현 C2
+update members set tier = 'C', stats = '{"passing":81,"dribbling":81,"physical":81,"defense":81,"stamina":81,"finishing":80}'::jsonb where id = 19; -- 육상현 C3
+update members set tier = 'C', stats = '{"passing":80,"dribbling":80,"physical":80,"defense":80,"stamina":80,"finishing":80}'::jsonb where id = 23; -- 노지환 C4
+update members set tier = 'C', stats = '{"passing":80,"dribbling":80,"physical":80,"defense":80,"stamina":80,"finishing":79}'::jsonb where id = 21; -- 표지성 C5
+update members set tier = 'C', stats = '{"passing":79,"dribbling":79,"physical":79,"defense":79,"stamina":79,"finishing":79}'::jsonb where id = 24; -- 하윤석 C6
 
 update members set tier = 'D', stats = '{"passing":77,"dribbling":77,"physical":77,"defense":77,"stamina":77,"finishing":77}'::jsonb where id = 25; -- 엄재희 D1
 update members set tier = 'D', stats = '{"passing":77,"dribbling":77,"physical":77,"defense":77,"stamina":77,"finishing":76}'::jsonb where id = 26; -- 피성준 D2
