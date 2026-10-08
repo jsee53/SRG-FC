@@ -19,6 +19,7 @@ export default function RankingPage({
   onDeleteMember,
   onSaveMemberStats,
   attendanceCountByMemberId,
+  totalConfirmedEvents,
   bestPlayerCountByMemberId,
 }) {
   const [filter, setFilter] = useState('전체')
@@ -36,7 +37,7 @@ export default function RankingPage({
     setSelectedMember(updated ?? null)
   }, [members])
 
-  const ordered = sortMembersFlat(filterMembers(members, filter), sortBy, equalMode)
+  const ordered = sortMembersFlat(filterMembers(members, filter), sortBy, equalMode, attendanceCountByMemberId)
   const selectedIndex = selectedMember ? ordered.findIndex((m) => m.id === selectedMember.id) : -1
   const aceId = getAceMemberId(members)
 
@@ -66,6 +67,8 @@ export default function RankingPage({
         filter={filter}
         sortBy={sortBy}
         equalMode={equalMode}
+        attendanceCountByMemberId={attendanceCountByMemberId}
+        totalConfirmedEvents={totalConfirmedEvents}
         selectedId={selectedMember?.id}
         aceId={aceId}
         onSelect={setSelectedMember}

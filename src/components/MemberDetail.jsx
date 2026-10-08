@@ -219,7 +219,14 @@ export default function MemberDetail({
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold">{member.name}</h2>
                 {member.number != null && <span className="text-[var(--color-text-muted)]">No.{member.number}</span>}
-                <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>{tierLabel}</span>
+                <span className={`flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-bold ${tier.badge}`}>
+                  {hideStats && (
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-2.5 w-2.5">
+                      <path d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h1Zm2 0h8V8a4 4 0 1 0-8 0v2Z" />
+                    </svg>
+                  )}
+                  {tierLabel}
+                </span>
               </div>
               <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">{meta}</p>
               <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">{activityMeta}</p>
@@ -234,13 +241,9 @@ export default function MemberDetail({
             </div>
           )}
 
-          {hideStats ? (
-            <p className="mt-6 text-center text-base font-semibold tracking-wider text-[var(--color-text-muted)]">Undefined</p>
-          ) : (
-            <div className="mt-4">
-              <RadarChart stats={member.stats} color={tier.accent} />
-            </div>
-          )}
+          <div className="mt-4">
+            <RadarChart stats={member.stats} color={tier.accent} locked={hideStats} />
+          </div>
         </div>
       </div>
     </div>

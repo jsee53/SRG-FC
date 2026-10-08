@@ -131,6 +131,9 @@ function App() {
     return counts
   }, [events])
 
+  // 참석률순 정렬에서 "N회 참석" 옆에 분모로 같이 보여줄 전체 성사된 경기 수
+  const totalConfirmedEvents = useMemo(() => events.filter((e) => e.confirmed).length, [events])
+
   // 팀별 최다 득표자(동률이면 전부)를 그 팀의 "베스트 플레이어"로 치고, 받은 횟수를 집계
   const bestPlayerCountByMemberId = useMemo(() => {
     const attendeeById = new Map()
@@ -315,6 +318,7 @@ function App() {
                 onDeleteMember={deleteMember}
                 onSaveMemberStats={updateMemberStats}
                 attendanceCountByMemberId={attendanceCountByMemberId}
+                totalConfirmedEvents={totalConfirmedEvents}
                 bestPlayerCountByMemberId={bestPlayerCountByMemberId}
               />
             </div>
