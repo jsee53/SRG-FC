@@ -939,6 +939,160 @@ update members set tier = 'D', stats = '{"passing":77,"dribbling":77,"physical":
 update members set tier = 'D', stats = '{"passing":77,"dribbling":77,"physical":77,"defense":77,"stamina":77,"finishing":76}'::jsonb where id = 26; -- 탁성원 D2
 
 -- =============================================================
+-- Phase 10: POM 1인 1표 버그 수정 + 경기 끝나면 자동 성사 처리
+-- =============================================================
+
+-- 33) 1인 1표 제한을 auth 계정(voter_id)이 아니라 "그 경기에서 실제로 뛴 사람"(voter_attendee_id)
+--    기준으로 바꿈. 기존엔 관리자가 계정 연결을 끊었다가 같은 이름으로 다시 연결하면(그 사이
+--    다른 계정이 연결되는 경우 포함) auth.uid()가 바뀌어서 같은 사람인데도 새 투표자로 취급돼
+--    버그처럼 중복 투표가 가능했고, 예전 투표도 그대로 남아있었음
+alter table event_best_player_votes add column if not exists voter_attendee_id bigint references event_attendees (id) on delete cascade;
+
+-- 기존 투표를 현재 연결 상태 기준으로 역추적해서 채움 (그 사이 연결이 끊긴 '유령' 투표는 NULL로 남음)
+update event_best_player_votes v
+set voter_attendee_id = mta.attendee_id
+from match_team_assignments mta
+join event_attendees ea on ea.id = mta.attendee_id
+join members m on m.id = ea.member_id
+where mta.match_id = v.match_id and m.user_id = v.voter_id and v.voter_attendee_id is null;
+
+-- 버그로 같은 사람이 같은 경기에 중복으로 갖게 된 투표는 최신 것만 남기고 정리
+delete from event_best_player_votes
+where id in (
+  select id from (
+    select id, row_number() over (partition by match_id, voter_attendee_id order by created_at desc) as rn
+    from event_best_player_votes
+    where voter_attendee_id is not null
+  ) ranked
+  where rn > 1
+);
+
+alter table event_best_player_votes drop constraint if exists event_best_player_votes_match_id_voter_id_key;
+alter table event_best_player_votes add constraint event_best_player_votes_match_id_voter_attendee_id_key unique (match_id, voter_attendee_id);
+
+drop function if exists cast_best_player_vote(bigint, bigint);
+drop function if exists retract_best_player_vote(bigint);
+
+-- 변수명을 event_best_player_votes.voter_attendee_id 컬럼명과 겹치지 않게 resolved_voter_attendee_id로
+-- 둬야 함 — 똑같으면 ON CONFLICT 절에서 "컬럼이냐 PL/pgSQL 변수냐" 모호하다는 에러(42702)가 남
+create or replace function cast_best_player_vote(target_match_id bigint, target_attendee_id bigint)
+returns void as $$
+declare
+  match_event_id bigint;
+  event_confirmed boolean;
+  resolved_voter_attendee_id bigint;
+  voter_team_index int;
+  candidate_team_index int;
+begin
+  select event_id into match_event_id from event_matches where id = target_match_id;
+  if not found then
+    raise exception 'match not found';
+  end if;
+
+  select confirmed into event_confirmed from events where id = match_event_id;
+  if not found or event_confirmed is not true then
+    raise exception 'event not confirmed yet';
+  end if;
+
+  select mta.attendee_id, mta.team_index into resolved_voter_attendee_id, voter_team_index
+    from match_team_assignments mta
+    join event_attendees ea on ea.id = mta.attendee_id
+    join members m on m.id = ea.member_id
+    where mta.match_id = target_match_id and m.user_id = auth.uid();
+  if not found then
+    raise exception 'you were not an attendee of this match';
+  end if;
+
+  if resolved_voter_attendee_id = target_attendee_id then
+    raise exception 'cannot vote for yourself';
+  end if;
+
+  select team_index into candidate_team_index
+    from match_team_assignments
+    where match_id = target_match_id and attendee_id = target_attendee_id;
+  if not found or candidate_team_index is distinct from voter_team_index then
+    raise exception 'candidate is not on your team';
+  end if;
+
+  insert into event_best_player_votes (event_id, match_id, team_index, voter_id, voter_attendee_id, voted_attendee_id)
+  values (match_event_id, target_match_id, voter_team_index, auth.uid(), resolved_voter_attendee_id, target_attendee_id)
+  on conflict (match_id, voter_attendee_id)
+  do update set voted_attendee_id = excluded.voted_attendee_id, team_index = excluded.team_index,
+                voter_id = excluded.voter_id, created_at = now();
+end;
+$$ language plpgsql security definer;
+
+create or replace function retract_best_player_vote(target_match_id bigint)
+returns void as $$
+declare
+  resolved_attendee_id bigint;
+begin
+  select mta.attendee_id into resolved_attendee_id
+    from match_team_assignments mta
+    join event_attendees ea on ea.id = mta.attendee_id
+    join members m on m.id = ea.member_id
+    where mta.match_id = target_match_id and m.user_id = auth.uid();
+
+  delete from event_best_player_votes
+  where match_id = target_match_id
+    and (voter_attendee_id = resolved_attendee_id or (voter_attendee_id is null and voter_id = auth.uid()));
+end;
+$$ language plpgsql security definer;
+
+-- 34) 경기 종료 시간이 지나면 관리자가 수동으로 "경기 성사됨"을 안 눌러도 자동으로 성사 처리.
+--    성사 여부 변경은 원래 관리자만 가능하지만(트리거로 막아둠), "이미 끝난 경기를 자동으로
+--    성사시키는" 이 한 가지 경우만 누가 호출해도 되게 예외를 둠(시간이 실제로 지났는지는
+--    서버가 직접 계산하므로 악용 불가능). 시간 비교는 한국 시간(Asia/Seoul) 기준으로 함
+create or replace function prevent_non_admin_confirm_change()
+returns trigger as $$
+begin
+  if old.confirmed is distinct from new.confirmed
+     and not exists (select 1 from admin_users where admin_users.user_id = auth.uid())
+     and not (
+       new.confirmed = true
+       and (new.event_date + coalesce(new.end_time, time '23:59:59')) at time zone 'Asia/Seoul' < now()
+     )
+  then
+    raise exception 'only admins can change confirmed status (use admin_set_event_confirmed)';
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create or replace function auto_confirm_passed_events()
+returns void as $$
+begin
+  update events
+  set confirmed = true
+  where confirmed = false
+    and auto_confirm_disabled = false
+    and (event_date + coalesce(end_time, time '23:59:59')) at time zone 'Asia/Seoul' < now();
+end;
+$$ language plpgsql security definer;
+
+-- 35) "경기 성사 취소"가 안 먹히던 버그 수정: 이미 끝난 경기는 거의 항상 auto_confirm_passed_events
+--    조건(confirmed=false AND 끝난 시간 지남)에 걸려서, 관리자가 방금 취소해도 그 직후 일어나는
+--    refetch()의 auto-confirm 호출이 바로 confirmed를 다시 true로 되돌려버렸음. 관리자가 명시적으로
+--    취소한 경기는 자동 성사 대상에서 제외되도록 플래그를 둠(다시 수동으로 성사 등록하면 풀림)
+alter table events add column if not exists auto_confirm_disabled boolean not null default false;
+
+create or replace function admin_set_event_confirmed(target_event_id bigint, is_confirmed boolean)
+returns void as $$
+begin
+  if not exists (select 1 from admin_users where user_id = auth.uid()) then
+    raise exception 'admin only';
+  end if;
+
+  update events
+  set confirmed = is_confirmed, auto_confirm_disabled = not is_confirmed
+  where id = target_event_id;
+  if not found then
+    raise exception 'event not found';
+  end if;
+end;
+$$ language plpgsql security definer;
+
+-- =============================================================
 -- 관리자 등록 방법 (이 SQL을 실행한 뒤, 별도로 진행하세요)
 -- =============================================================
 -- 1. Supabase 대시보드 > Authentication > Users > Add user 에서

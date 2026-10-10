@@ -94,12 +94,15 @@ export function useEvents() {
   const refetch = useCallback(async () => {
     if (!hasLoadedOnce.current) setLoading(true)
     setError(null)
+    // 끝난 시간이 지난 경기는 관리자가 안 눌러도 자동으로 "성사됨" 처리되게끔, 목록을 불러올
+    // 때마다 서버에 체크를 요청함(실패해도 목록 조회 자체엔 영향 없게 무시)
+    await supabase.rpc('auto_confirm_passed_events')
     const { data, error: fetchError } = await supabase
       .from('events')
       .select(
         '*, event_attendees(id, name, member_id, tier), event_matches(id, match_number, match_team_assignments(attendee_id, team_index))'
       )
-      .order('event_date', { ascending: true })
+      .order('event_date', { ascending: false })
 
     if (fetchError) {
       setError(fetchError)
