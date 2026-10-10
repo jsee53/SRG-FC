@@ -20,9 +20,10 @@ function resolvePowerScore(attendee, members) {
   return powerScore(member)
 }
 
-export default function EventTeams({ event, match, members, myMemberId, voterId, votes, isAdmin, onMoveAttendee, onCastVote, onRetractVote }) {
+export default function EventTeams({ event, match, members, myMemberId, voterId, votes, isAdmin, teamEditMode, onMoveAttendee, onCastVote, onRetractVote }) {
   const [pendingId, setPendingId] = useState(null)
   const [movingId, setMovingId] = useState(null)
+  const [voteError, setVoteError] = useState('')
   const attendeeById = new Map(event.attendees.map((a) => [a.id, a]))
   const teamGroups = groupByTeam(match.assignments)
 
@@ -44,16 +45,17 @@ export default function EventTeams({ event, match, members, myMemberId, voterId,
   // 이미 투표한 사람을 다시 누르면 투표 취소(= 아무도 안 줌), 자기 자신에게는 투표 못 함
   async function handleVote(attendeeId, isMyVote) {
     setPendingId(attendeeId)
-    if (isMyVote) {
-      await onRetractVote(match.id)
-    } else {
-      await onCastVote(match.id, attendeeId)
-    }
+    setVoteError('')
+    const { error } = isMyVote ? await onRetractVote(match.id) : await onCastVote(match.id, attendeeId)
     setPendingId(null)
+    if (error) {
+      setVoteError(error.message ?? '투표 처리에 실패했어요. 다시 시도해주세요.')
+    }
   }
 
   return (
     <div className="mt-3 flex flex-col gap-3">
+      {voteError && <p className="text-xs text-red-400">{voteError}</p>}
       {teamGroups.map(([teamIndex, assignments]) => {
         const isMyTeam = canVote && myAssignment.teamIndex === teamIndex
         const teamVotes = votes.filter((v) => v.matchId === match.id && v.teamIndex === teamIndex)
@@ -97,7 +99,7 @@ export default function EventTeams({ event, match, members, myMemberId, voterId,
                           {isMyVote ? '투표 취소' : '투표'}
                         </button>
                       )}
-                      {isAdmin && (
+                      {isAdmin && teamEditMode && (
                         <select
                           value={teamIndex}
                           disabled={movingId === attendeeId}

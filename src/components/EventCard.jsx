@@ -39,6 +39,7 @@ export default function EventCard({
   const [creatingMatch, setCreatingMatch] = useState(false)
   const [addingMatch, setAddingMatch] = useState(false)
   const [activeMatchIndex, setActiveMatchIndex] = useState(0)
+  const [teamEditMode, setTeamEditMode] = useState(false)
 
   const realMatches = event.matches ?? []
   const displayMatches = realMatches.length > 0 ? realMatches : [VIRTUAL_FIRST_MATCH]
@@ -173,6 +174,22 @@ export default function EventCard({
               </div>
             )}
 
+            {isAdmin && hasTeams && (
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={() => setTeamEditMode((v) => !v)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    teamEditMode
+                      ? 'bg-amber-400 text-amber-950 hover:bg-amber-300'
+                      : 'bg-[var(--color-surface-soft)] text-[var(--color-text-soft)] hover:bg-[var(--color-surface-soft-hover)]'
+                  }`}
+                >
+                  {teamEditMode ? '팀 수정 모드 끄기' : '팀 수정 모드'}
+                </button>
+              </div>
+            )}
+
             {showTabs && (
               <div className="mt-3 flex flex-wrap items-center gap-1.5">
                 {displayMatches.map((match, i) => (
@@ -247,6 +264,7 @@ export default function EventCard({
               voterId={session?.user?.id}
               votes={votes}
               isAdmin={isAdmin}
+              teamEditMode={teamEditMode}
               onMoveAttendee={onMoveAttendee}
               onCastVote={onCastVote}
               onRetractVote={onRetractVote}
