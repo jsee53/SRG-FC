@@ -5,7 +5,6 @@ function mapRow(row) {
   return {
     id: row.id,
     authorId: row.author_id,
-    authorEmail: row.author_email,
     title: row.title,
     content: row.content,
     createdAt: row.created_at,
@@ -25,7 +24,7 @@ export function usePosts() {
     setError(null)
     const { data, error: fetchError } = await supabase
       .from('posts')
-      .select('*, comments(count), post_likes(user_id)')
+      .select('id, author_id, title, content, is_notice, created_at, comments(count), post_likes(user_id)')
       .order('is_notice', { ascending: false })
       .order('created_at', { ascending: false })
 

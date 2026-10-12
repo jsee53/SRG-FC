@@ -89,7 +89,7 @@ export default function PostDetail({
 
         <div className="mt-1 flex items-center justify-between">
           <p className="text-xs text-[var(--color-text-muted)]">
-            {resolveAuthorName(members, post.authorId, post.authorEmail)} ·{' '}
+            {resolveAuthorName(members, post.authorId)} ·{' '}
             {new Date(post.createdAt).toLocaleDateString('ko-KR')}
           </p>
           <div className="flex flex-none gap-2 text-sm">

@@ -22,7 +22,7 @@ export default function CommentList({ comments, members, session, isAdmin, onDel
           <div key={comment.id} className="rounded-xl bg-[var(--color-surface-faint)] p-3">
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs font-semibold text-accent-300">
-                {resolveAuthorName(members, comment.authorId, comment.authorEmail)}
+                {resolveAuthorName(members, comment.authorId)}
               </p>
               {canDelete && (
                 <button
