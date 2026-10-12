@@ -63,7 +63,7 @@ export default function MemberCard({ member, rank, equalMode, brandMode, active,
             </div>
           )}
           <div className="flex items-center gap-2">
-            <span className="truncate font-semibold">{member.name}</span>
+            <span className="flex-none truncate font-semibold">{member.name}</span>
             {member.number != null && <span className="text-sm text-[var(--color-text-muted)]">No.{member.number}</span>}
             {!brandMode && (
               <span
