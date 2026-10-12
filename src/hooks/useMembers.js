@@ -13,7 +13,6 @@ function mapRow(row) {
     role: row.role ?? undefined,
     stats: row.stats,
     userId: row.user_id ?? null,
-    linkedEmail: row.linked_email ?? null,
   }
 }
 
@@ -27,7 +26,9 @@ export function useMembers() {
   const refetch = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const { data, error: fetchError } = await supabase.from('members').select('*')
+    const { data, error: fetchError } = await supabase
+      .from('members')
+      .select('id, name, number, birth_year, positions, tier, intro, role, stats, user_id, updated_at')
     if (fetchError) {
       setError(fetchError)
     } else {

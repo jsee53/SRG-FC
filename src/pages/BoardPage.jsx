@@ -64,7 +64,7 @@ export default function BoardPage({ members, session, isAdmin, canPostNotice, on
                 <p className="font-semibold text-[var(--color-text)]">{post.title}</p>
               </div>
               <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                {resolveAuthorName(members, post.authorId, post.authorEmail)} ·{' '}
+                {resolveAuthorName(members, post.authorId)} ·{' '}
                 {new Date(post.createdAt).toLocaleDateString('ko-KR')} · 댓글 {post.commentCount} · 좋아요{' '}
                 {post.likedUserIds.length}
               </p>

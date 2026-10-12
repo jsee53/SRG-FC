@@ -1153,6 +1153,63 @@ update members set stats = '{"passing":83,"dribbling":83,"physical":83,"defense"
 update members set stats = '{"passing":87,"dribbling":80,"physical":80,"defense":80,"stamina":80,"finishing":78}'::jsonb where id = 17; -- 김준서 C3
 
 -- =============================================================
+-- Phase 13: 능력치 간격 재조정 v3 (쉼표=2점이 '거의 동일'을 완전히 대체, '>'=5점, '>>'=7점)
+-- 더 이상 완전히 동일한 스탯은 없고(공백/쉼표 구분 전부 최소 2점 차이), '>'/'>>' 간격도 넓힘.
+-- 단, 상위권 스탯이 98을 넘지 않도록(캡) 일부는 간격을 유도리있게 3~8점 사이로 조정함.
+-- 이 Phase는 Phase 11/12 를 전부 대체하는 최종본이라, Phase 11/12를 실행했든 안 했든
+-- 이 블록만 실행하면 26명 전원의 등급/능력치가 올바른 최종 상태가 됨
+-- =============================================================
+update members set tier = 'S', stats = '{"passing":98,"dribbling":97,"physical":96,"defense":94,"stamina":93,"finishing":92}'::jsonb where id = 1; -- 고태현 S1
+update members set tier = 'S', stats = '{"passing":96,"dribbling":95,"physical":94,"defense":92,"stamina":98,"finishing":91}'::jsonb where id = 3; -- 최현규 S2
+update members set tier = 'S', stats = '{"passing":98,"dribbling":97,"physical":93,"defense":91,"stamina":90,"finishing":96}'::jsonb where id = 2; -- 김다훈 S3
+update members set tier = 'S', stats = '{"passing":98,"dribbling":97,"physical":95,"defense":93,"stamina":91,"finishing":90}'::jsonb where id = 4; -- 한상혁 S4
+update members set tier = 'S', stats = '{"passing":92,"dribbling":98,"physical":91,"defense":90,"stamina":89,"finishing":97}'::jsonb where id = 6; -- 송지우 S5
+update members set tier = 'S', stats = '{"passing":93,"dribbling":91,"physical":90,"defense":97,"stamina":96,"finishing":89}'::jsonb where id = 5; -- 송정성 S6
+
+update members set tier = 'A', stats = '{"passing":97,"dribbling":88,"physical":95,"defense":93,"stamina":85,"finishing":83}'::jsonb where id = 14; -- 서승찬 A1
+update members set tier = 'A', stats = '{"passing":80,"dribbling":96,"physical":94,"defense":92,"stamina":90,"finishing":87}'::jsonb where id = 7; -- 진시영 A2
+update members set tier = 'A', stats = '{"passing":98,"dribbling":92,"physical":90,"defense":88,"stamina":86,"finishing":84}'::jsonb where id = 8; -- 박주성 A3
+update members set tier = 'A', stats = '{"passing":81,"dribbling":95,"physical":93,"defense":90,"stamina":88,"finishing":86}'::jsonb where id = 12; -- 김진웅 A4
+update members set tier = 'A', stats = '{"passing":91,"dribbling":89,"physical":86,"defense":98,"stamina":84,"finishing":82}'::jsonb where id = 11; -- 최찬영 A5
+update members set tier = 'A', stats = '{"passing":86,"dribbling":94,"physical":84,"defense":92,"stamina":82,"finishing":90}'::jsonb where id = 22; -- 박형진 A6
+
+update members set tier = 'B', stats = '{"passing":92,"dribbling":90,"physical":88,"defense":80,"stamina":78,"finishing":86}'::jsonb where id = 10; -- 안무힐 B1
+update members set tier = 'B', stats = '{"passing":85,"dribbling":94,"physical":83,"defense":81,"stamina":78,"finishing":92}'::jsonb where id = 9; -- 김진호 B2
+update members set tier = 'B', stats = '{"passing":92,"dribbling":90,"physical":81,"defense":88,"stamina":73,"finishing":86}'::jsonb where id = 15; -- 최종범 B3
+update members set tier = 'B', stats = '{"passing":96,"dribbling":84,"physical":82,"defense":89,"stamina":80,"finishing":78}'::jsonb where id = 16; -- 장천명 B4
+update members set tier = 'B', stats = '{"passing":86,"dribbling":84,"physical":82,"defense":80,"stamina":78,"finishing":94}'::jsonb where id = 13; -- 이승준 B5
+update members set tier = 'B', stats = '{"passing":93,"dribbling":88,"physical":75,"defense":84,"stamina":82,"finishing":80}'::jsonb where id = 20; -- 한민석 B6
+
+update members set tier = 'C', stats = '{"passing":87,"dribbling":85,"physical":83,"defense":81,"stamina":79,"finishing":74}'::jsonb where id = 19; -- 편현재 C1
+update members set tier = 'C', stats = '{"passing":86,"dribbling":84,"physical":82,"defense":80,"stamina":78,"finishing":76}'::jsonb where id = 18; -- 윤준영 C2
+update members set tier = 'C', stats = '{"passing":91,"dribbling":84,"physical":82,"defense":79,"stamina":77,"finishing":72}'::jsonb where id = 17; -- 김준서 C3
+update members set tier = 'C', stats = '{"passing":85,"dribbling":83,"physical":81,"defense":79,"stamina":77,"finishing":75}'::jsonb where id = 23; -- 김형석 C4
+update members set tier = 'C', stats = '{"passing":86,"dribbling":84,"physical":81,"defense":79,"stamina":77,"finishing":72}'::jsonb where id = 21; -- 이민녕 C5
+update members set tier = 'C', stats = '{"passing":84,"dribbling":82,"physical":80,"defense":78,"stamina":76,"finishing":74}'::jsonb where id = 24; -- 장경우 C6
+
+update members set tier = 'D', stats = '{"passing":82,"dribbling":80,"physical":78,"defense":76,"stamina":74,"finishing":72}'::jsonb where id = 25; -- 조병찬 D1
+update members set tier = 'D', stats = '{"passing":83,"dribbling":81,"physical":78,"defense":76,"stamina":74,"finishing":69}'::jsonb where id = 26; -- 탁성원 D2
+
+-- =============================================================
+-- Phase 14: 이메일 주소 공개 노출 보안 수정
+-- posts/comments.author_email, members.linked_email이 "누구나 읽기" 정책(select using (true))에
+-- 그대로 포함돼서, 로그인 없이도 anon key로 전체 작성자/연결계정 이메일을 조회할 수 있었음.
+-- (특히 posts/comments는 로스터 미연동 계정의 글/댓글에 이메일 아이디 앞부분이 화면에도 그대로 노출됨)
+-- Postgres 컬럼 권한은 "테이블 전체 SELECT 권한이 있으면 컬럼 단위 REVOKE가 안 먹는" 특성이 있어서,
+-- 테이블 전체 SELECT를 걷어내고 공개해도 되는 컬럼만 다시 컬럼 단위로 GRANT 하는 방식으로 처리함.
+-- author_email/linked_email 자체는 계속 저장은 하되(추후 관리자 전용 조회용으로 남겨둠), anon/authenticated
+-- 역할에서는 더 이상 조회할 수 없게 됨. 프론트엔드도 이 두 컬럼을 select에서 아예 빼도록 같이 수정함
+-- =============================================================
+revoke select on posts from anon, authenticated;
+grant select (id, author_id, title, content, is_notice, created_at) on posts to anon, authenticated;
+
+revoke select on comments from anon, authenticated;
+grant select (id, post_id, author_id, content, created_at) on comments to anon, authenticated;
+
+revoke select on members from anon, authenticated;
+grant select (id, name, number, birth_year, positions, tier, intro, role, stats, user_id, updated_at) on members to anon, authenticated;
+
+-- =============================================================
 -- 관리자 등록 방법 (이 SQL을 실행한 뒤, 별도로 진행하세요)
 -- =============================================================
 -- 1. Supabase 대시보드 > Authentication > Users > Add user 에서

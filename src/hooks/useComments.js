@@ -6,7 +6,6 @@ function mapRow(row) {
     id: row.id,
     postId: row.post_id,
     authorId: row.author_id,
-    authorEmail: row.author_email,
     content: row.content,
     createdAt: row.created_at,
     likedUserIds: (row.comment_likes ?? []).map((l) => l.user_id),
@@ -24,7 +23,7 @@ export function useComments(postId) {
     setError(null)
     const { data, error: fetchError } = await supabase
       .from('comments')
-      .select('*, comment_likes(user_id)')
+      .select('id, post_id, author_id, content, created_at, comment_likes(user_id)')
       .eq('post_id', postId)
       .order('created_at', { ascending: true })
 

@@ -121,7 +121,7 @@ export default function AdminPage({
             clearing={clearingPins}
           />
 
-          <LinkedAccountsSection members={members} onUnlink={onUnlinkMember} />
+          <LinkedAccountsSection members={members} accounts={accounts} onUnlink={onUnlinkMember} />
           <AccountsSection
             accounts={accounts}
             loading={loading}
