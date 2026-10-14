@@ -1210,6 +1210,192 @@ revoke select on members from anon, authenticated;
 grant select (id, name, number, birth_year, positions, tier, intro, role, stats, user_id, updated_at) on members to anon, authenticated;
 
 -- =============================================================
+-- Phase 15: 순위 재조정 (요청받은 새 순위표 반영)
+--
+-- [참고] 개인별 스탯 순위 표기 기준(이전에 요청받아 반영한 간격 규칙):
+--   공백/쉼표(,) = 거의 동일(최소 2점 차이), '>' = 5점 차이, '>>' = 7점 차이로 역산.
+--   단, 최고 스탯이 98을 못 넘게 캡을 걸어야 해서 상황에 따라 3~8점 사이로 유동적으로 조정됨
+--   (사용자 승인: "너무 딱딱하게 내가 알려준 차이 점수만큼 끊을 필요는 없어... 너가 판단해서 알아서 만들어")
+--
+-- 새 순위: S(강민재,도경민,문도윤,유건우,천성우,남기현) A(신우진,권예준,백시온,봉진우,황도현,배서진)
+--         B(구본혁,차무진,곽동하,임하준,석태민,류태오) C(변재원,육상현,전승현,노지환,표지성,하윤석) D(엄재희,피성준)
+-- 기존과 같은 사람은 그대로 둠(도경민/문도윤/남기현/곽동하/노지환/표지성/하윤석/엄재희/피성준).
+-- 유건우↔천성우(S4↔S5), A조 전체 순환 이동, B조는 구본혁이 B1로 올라가고 류태오가 C에서 B6으로 승격,
+-- 반대로 변재원은 B에서 C1로 강등. 각자 새 순위 slot의 총합(Phase 9 기준)에 맞춰 본인 스탯 분포
+-- 모양(강점/약점 스탯)은 그대로 유지한 채 재계산함
+-- =============================================================
+update members set stats = '{"passing":95,"dribbling":98,"physical":93,"defense":92,"stamina":90,"finishing":96}'::jsonb where id = 6; -- 유건우 S4
+update members set stats = '{"passing":98,"dribbling":96,"physical":94,"defense":92,"stamina":90,"finishing":87}'::jsonb where id = 4; -- 천성우 S5
+
+update members set stats = '{"passing":98,"dribbling":93,"physical":91,"defense":89,"stamina":86,"finishing":84}'::jsonb where id = 8; -- 신우진 A1
+update members set stats = '{"passing":97,"dribbling":88,"physical":95,"defense":93,"stamina":84,"finishing":82}'::jsonb where id = 14; -- 권예준 A2
+update members set stats = '{"passing":79,"dribbling":96,"physical":94,"defense":92,"stamina":90,"finishing":87}'::jsonb where id = 7; -- 백시온 A3
+update members set stats = '{"passing":91,"dribbling":89,"physical":87,"defense":98,"stamina":85,"finishing":83}'::jsonb where id = 11; -- 봉진우 A4
+update members set stats = '{"passing":86,"dribbling":95,"physical":84,"defense":93,"stamina":82,"finishing":90}'::jsonb where id = 22; -- 황도현 A5
+update members set stats = '{"passing":81,"dribbling":94,"physical":92,"defense":89,"stamina":87,"finishing":85}'::jsonb where id = 12; -- 배서진 A6
+
+update members set stats = '{"passing":88,"dribbling":86,"physical":84,"defense":81,"stamina":79,"finishing":96}'::jsonb where id = 13; -- 구본혁 B1
+update members set stats = '{"passing":92,"dribbling":90,"physical":88,"defense":80,"stamina":77,"finishing":86}'::jsonb where id = 10; -- 차무진 B2
+update members set stats = '{"passing":84,"dribbling":94,"physical":82,"defense":80,"stamina":77,"finishing":92}'::jsonb where id = 9; -- 임하준 B4
+update members set stats = '{"passing":96,"dribbling":83,"physical":81,"defense":88,"stamina":79,"finishing":77}'::jsonb where id = 16; -- 석태민 B5
+update members set tier = 'B', stats = '{"passing":93,"dribbling":87,"physical":85,"defense":82,"stamina":80,"finishing":75}'::jsonb where id = 17; -- 류태오 B6 (C에서 승격)
+
+update members set tier = 'C', stats = '{"passing":90,"dribbling":86,"physical":73,"defense":82,"stamina":80,"finishing":78}'::jsonb where id = 20; -- 변재원 C1 (B에서 강등)
+update members set stats = '{"passing":87,"dribbling":85,"physical":83,"defense":80,"stamina":78,"finishing":73}'::jsonb where id = 19; -- 육상현 C2
+update members set stats = '{"passing":86,"dribbling":84,"physical":82,"defense":80,"stamina":78,"finishing":75}'::jsonb where id = 18; -- 전승현 C3
+
+-- =============================================================
+-- Phase 16: S급 1위 평균 95점 → 90점으로 하향 재조정 (전원 재계산)
+--
+-- 대시보드에서 직접 능력치를 수정하셨다고 해서 현재 DB 값을 기준으로 다시 계산함. 그런데
+-- 그 값을 점검해보니 쉼표(,)=최소 2점 차이 규칙이 깨진 곳이 2명 있었음 — 유건우(defense/stamina가
+-- 둘 다 90으로 완전히 동일), 백시온(defense/stamina가 둘 다 90으로 동일). 이번에 재계산하면서
+-- 두 사람 모두 본인 총합은 그대로 유지한 채 그 두 스탯만 91/89로 갈라서 바로잡음
+--
+-- [참고] 개인별 스탯 순위 표기 기준: 공백/쉼표(,) = 거의 동일(최소 2점 차이), '>' = 5점 차이,
+-- '>>' = 7점 차이로 역산. 다만 최고 스탯이 98을 못 넘게 캡을 걸어야 해서 상황에 따라 3~8점
+-- 사이로 유동적으로 조정됨(사용자 승인 사항)
+--
+-- S급 1위(강민재) 평균을 95점 → 90점으로 낮춰달라는 요청 = 총합 기준 -30점. 등급/순위 간
+-- 상대적 격차(등급 경계 2.0평균, 등급 내 순위 0.5평균)는 그대로 유지해야 하므로, 위에서
+-- 바로잡은 현재 DB 값을 기준으로 전원의 총합을 똑같이 30점씩 낮추고, 그 총합에 맞춰 각자
+-- 스탯 분포 모양(강점/약점)은 그대로 유지한 채 다시 계산함
+-- =============================================================
+update members set stats = '{"passing":93,"dribbling":92,"physical":91,"defense":89,"stamina":88,"finishing":87}'::jsonb where id = 1; -- 강민재 S1
+update members set stats = '{"passing":91,"dribbling":90,"physical":89,"defense":87,"stamina":93,"finishing":86}'::jsonb where id = 3; -- 도경민 S2
+update members set stats = '{"passing":93,"dribbling":92,"physical":88,"defense":86,"stamina":85,"finishing":91}'::jsonb where id = 2; -- 문도윤 S3
+update members set stats = '{"passing":90,"dribbling":89,"physical":88,"defense":86,"stamina":84,"finishing":93}'::jsonb where id = 6; -- 유건우 S4
+update members set stats = '{"passing":93,"dribbling":91,"physical":89,"defense":87,"stamina":85,"finishing":82}'::jsonb where id = 4; -- 천성우 S5
+update members set stats = '{"passing":88,"dribbling":86,"physical":85,"defense":92,"stamina":91,"finishing":84}'::jsonb where id = 5; -- 남기현 S6
+
+update members set stats = '{"passing":93,"dribbling":88,"physical":86,"defense":84,"stamina":81,"finishing":79}'::jsonb where id = 8; -- 신우진 A1
+update members set stats = '{"passing":92,"dribbling":83,"physical":90,"defense":88,"stamina":79,"finishing":77}'::jsonb where id = 14; -- 권예준 A2
+update members set stats = '{"passing":74,"dribbling":89,"physical":87,"defense":86,"stamina":84,"finishing":88}'::jsonb where id = 7; -- 백시온 A3
+update members set stats = '{"passing":86,"dribbling":84,"physical":82,"defense":93,"stamina":80,"finishing":78}'::jsonb where id = 11; -- 봉진우 A4
+update members set stats = '{"passing":81,"dribbling":90,"physical":79,"defense":88,"stamina":77,"finishing":85}'::jsonb where id = 22; -- 황도현 A5
+update members set stats = '{"passing":76,"dribbling":89,"physical":87,"defense":84,"stamina":82,"finishing":80}'::jsonb where id = 12; -- 배서진 A6
+
+update members set stats = '{"passing":83,"dribbling":81,"physical":79,"defense":76,"stamina":74,"finishing":91}'::jsonb where id = 13; -- 구본혁 B1
+update members set stats = '{"passing":87,"dribbling":85,"physical":83,"defense":75,"stamina":72,"finishing":81}'::jsonb where id = 10; -- 차무진 B2
+update members set stats = '{"passing":87,"dribbling":85,"physical":76,"defense":83,"stamina":68,"finishing":81}'::jsonb where id = 15; -- 곽동하 B3
+update members set stats = '{"passing":79,"dribbling":89,"physical":77,"defense":75,"stamina":72,"finishing":87}'::jsonb where id = 9; -- 임하준 B4
+update members set stats = '{"passing":91,"dribbling":78,"physical":76,"defense":83,"stamina":74,"finishing":72}'::jsonb where id = 16; -- 석태민 B5
+update members set stats = '{"passing":88,"dribbling":82,"physical":80,"defense":77,"stamina":75,"finishing":70}'::jsonb where id = 17; -- 류태오 B6
+
+update members set stats = '{"passing":85,"dribbling":81,"physical":68,"defense":77,"stamina":75,"finishing":73}'::jsonb where id = 20; -- 변재원 C1
+update members set stats = '{"passing":82,"dribbling":80,"physical":78,"defense":75,"stamina":73,"finishing":68}'::jsonb where id = 19; -- 육상현 C2
+update members set stats = '{"passing":81,"dribbling":79,"physical":77,"defense":75,"stamina":73,"finishing":70}'::jsonb where id = 18; -- 전승현 C3
+update members set stats = '{"passing":80,"dribbling":78,"physical":76,"defense":74,"stamina":72,"finishing":70}'::jsonb where id = 23; -- 노지환 C4
+update members set stats = '{"passing":81,"dribbling":79,"physical":76,"defense":74,"stamina":72,"finishing":67}'::jsonb where id = 21; -- 표지성 C5
+update members set stats = '{"passing":79,"dribbling":77,"physical":75,"defense":73,"stamina":71,"finishing":69}'::jsonb where id = 24; -- 하윤석 C6
+
+update members set stats = '{"passing":77,"dribbling":75,"physical":73,"defense":71,"stamina":69,"finishing":67}'::jsonb where id = 25; -- 엄재희 D1
+update members set stats = '{"passing":78,"dribbling":76,"physical":73,"defense":71,"stamina":69,"finishing":64}'::jsonb where id = 26; -- 피성준 D2
+
+-- =============================================================
+-- Phase 17: S급 1위 평균 90점 → 92점으로 재조정 (전원 재계산)
+-- Phase 16 기준 전원 총합을 12점씩(+2평균) 균일하게 올림. 등급 경계/순위 간 상대적 격차와
+-- 각자 스탯 분포 모양(강점/약점)은 그대로 유지. 간격 표기 기준은 Phase 16 주석 참고
+-- =============================================================
+update members set stats = '{"passing":95,"dribbling":94,"physical":93,"defense":91,"stamina":90,"finishing":89}'::jsonb where id = 1; -- 강민재 S1
+update members set stats = '{"passing":93,"dribbling":92,"physical":91,"defense":89,"stamina":95,"finishing":88}'::jsonb where id = 3; -- 도경민 S2
+update members set stats = '{"passing":95,"dribbling":94,"physical":90,"defense":88,"stamina":87,"finishing":93}'::jsonb where id = 2; -- 문도윤 S3
+update members set stats = '{"passing":92,"dribbling":91,"physical":90,"defense":88,"stamina":86,"finishing":95}'::jsonb where id = 6; -- 유건우 S4
+update members set stats = '{"passing":95,"dribbling":93,"physical":91,"defense":89,"stamina":87,"finishing":84}'::jsonb where id = 4; -- 천성우 S5
+update members set stats = '{"passing":90,"dribbling":88,"physical":87,"defense":94,"stamina":93,"finishing":86}'::jsonb where id = 5; -- 남기현 S6
+
+update members set stats = '{"passing":95,"dribbling":90,"physical":88,"defense":86,"stamina":83,"finishing":81}'::jsonb where id = 8; -- 신우진 A1
+update members set stats = '{"passing":94,"dribbling":85,"physical":92,"defense":90,"stamina":81,"finishing":79}'::jsonb where id = 14; -- 권예준 A2
+update members set stats = '{"passing":76,"dribbling":91,"physical":89,"defense":88,"stamina":86,"finishing":90}'::jsonb where id = 7; -- 백시온 A3
+update members set stats = '{"passing":88,"dribbling":86,"physical":84,"defense":95,"stamina":82,"finishing":80}'::jsonb where id = 11; -- 봉진우 A4
+update members set stats = '{"passing":83,"dribbling":92,"physical":81,"defense":90,"stamina":79,"finishing":87}'::jsonb where id = 22; -- 황도현 A5
+update members set stats = '{"passing":78,"dribbling":91,"physical":89,"defense":86,"stamina":84,"finishing":82}'::jsonb where id = 12; -- 배서진 A6
+
+update members set stats = '{"passing":85,"dribbling":83,"physical":81,"defense":78,"stamina":76,"finishing":93}'::jsonb where id = 13; -- 구본혁 B1
+update members set stats = '{"passing":89,"dribbling":87,"physical":85,"defense":77,"stamina":74,"finishing":83}'::jsonb where id = 10; -- 차무진 B2
+update members set stats = '{"passing":89,"dribbling":87,"physical":78,"defense":85,"stamina":70,"finishing":83}'::jsonb where id = 15; -- 곽동하 B3
+update members set stats = '{"passing":81,"dribbling":91,"physical":79,"defense":77,"stamina":74,"finishing":89}'::jsonb where id = 9; -- 임하준 B4
+update members set stats = '{"passing":93,"dribbling":80,"physical":78,"defense":85,"stamina":76,"finishing":74}'::jsonb where id = 16; -- 석태민 B5
+update members set stats = '{"passing":90,"dribbling":84,"physical":82,"defense":79,"stamina":77,"finishing":72}'::jsonb where id = 17; -- 류태오 B6
+
+update members set stats = '{"passing":87,"dribbling":83,"physical":70,"defense":79,"stamina":77,"finishing":75}'::jsonb where id = 20; -- 변재원 C1
+update members set stats = '{"passing":84,"dribbling":82,"physical":80,"defense":77,"stamina":75,"finishing":70}'::jsonb where id = 19; -- 육상현 C2
+update members set stats = '{"passing":83,"dribbling":81,"physical":79,"defense":77,"stamina":75,"finishing":72}'::jsonb where id = 18; -- 전승현 C3
+update members set stats = '{"passing":82,"dribbling":80,"physical":78,"defense":76,"stamina":74,"finishing":72}'::jsonb where id = 23; -- 노지환 C4
+update members set stats = '{"passing":83,"dribbling":81,"physical":78,"defense":76,"stamina":74,"finishing":69}'::jsonb where id = 21; -- 표지성 C5
+update members set stats = '{"passing":81,"dribbling":79,"physical":77,"defense":75,"stamina":73,"finishing":71}'::jsonb where id = 24; -- 하윤석 C6
+
+update members set stats = '{"passing":79,"dribbling":77,"physical":75,"defense":73,"stamina":71,"finishing":69}'::jsonb where id = 25; -- 엄재희 D1
+update members set stats = '{"passing":80,"dribbling":78,"physical":75,"defense":73,"stamina":71,"finishing":66}'::jsonb where id = 26; -- 피성준 D2
+
+-- =============================================================
+-- Phase 18: 관리자가 Supabase 대시보드에서 직접 수정한 최종본 기록
+-- 사용자가 대시보드 SQL Editor에서 전원 능력치를 직접 손으로 재조정함. 이 Phase는 DB에
+-- 이미 반영되어 있는 값을 schema.sql에도 그대로 옮겨 적어 기록해두는 용도(실행해도 결과 동일).
+--
+-- 점검 결과: 13명에서 같은 스탯값이 완전히 겹치는 경우가 있었음(이전에 정했던 "쉼표=최소
+-- 2점 차이, 완전 동일 없음" 규칙과는 다름). 사용자 확인: 겹치는 값 그대로 유지하기로 함.
+-- 아래 주석은 각자 스탯 순위를 강점→약점 순으로 표기한 것 — 기호는 값 차이 기준으로
+-- "=" 완전 동일, "," 1~3점 차이, ">" 4~6점 차이, ">>" 7점 이상 차이
+-- =============================================================
+-- 강민재(S1): 패스94 , 드리블93 = 슛93 , 활동량92 , 수비90 = 피지컬90
+update members set stats = '{"passing":94,"dribbling":93,"physical":90,"defense":90,"stamina":92,"finishing":93}'::jsonb where id = 1;
+-- 도경민(S2): 활동량97 , 수비94 , 피지컬91 , 패스90 = 슛90 > 드리블86
+update members set stats = '{"passing":90,"dribbling":86,"physical":91,"defense":94,"stamina":97,"finishing":90}'::jsonb where id = 3;
+-- 문도윤(S3): 패스97 , 드리블94 = 슛94 > 수비89 , 활동량87 , 피지컬86
+update members set stats = '{"passing":97,"dribbling":94,"physical":86,"defense":89,"stamina":87,"finishing":94}'::jsonb where id = 2;
+-- 유건우(S4): 슛98 , 드리블95 > 패스89 = 피지컬89 , 수비86 , 활동량85
+update members set stats = '{"passing":89,"dribbling":95,"physical":89,"defense":86,"stamina":85,"finishing":98}'::jsonb where id = 6;
+-- 천성우(S5): 패스94 , 드리블92 , 수비91 = 활동량91 > 피지컬87 , 슛84
+update members set stats = '{"passing":94,"dribbling":92,"physical":87,"defense":91,"stamina":91,"finishing":84}'::jsonb where id = 4;
+-- 남기현(S6): 수비98 > 활동량93 > 패스89 , 피지컬87 , 드리블86 , 슛85
+update members set stats = '{"passing":89,"dribbling":86,"physical":87,"defense":98,"stamina":93,"finishing":85}'::jsonb where id = 5;
+
+-- 신우진(A1): 패스95 > 수비90 , 활동량89 > 드리블84 = 슛84 , 피지컬81
+update members set stats = '{"passing":95,"dribbling":84,"physical":81,"defense":90,"stamina":89,"finishing":84}'::jsonb where id = 8;
+-- 권예준(A2): 수비92 = 피지컬92 > 드리블88 , 패스87 > 슛83 > 활동량79
+update members set stats = '{"passing":87,"dribbling":88,"physical":92,"defense":92,"stamina":79,"finishing":83}'::jsonb where id = 14;
+-- 백시온(A3): 슛91 , 피지컬90 = 드리블90 , 수비87 = 활동량87 >> 패스75
+update members set stats = '{"passing":75,"dribbling":90,"physical":90,"defense":87,"stamina":87,"finishing":91}'::jsonb where id = 7;
+-- 봉진우(A4): 수비94 >> 패스87 , 피지컬85 , 활동량84 , 드리블83 , 슛82
+update members set stats = '{"passing":87,"dribbling":83,"physical":85,"defense":94,"stamina":84,"finishing":82}'::jsonb where id = 11;
+-- 황도현(A5): 드리블89 = 슛89 , 활동량87 , 수비85 > 패스81 , 피지컬80
+update members set stats = '{"passing":81,"dribbling":89,"physical":80,"defense":85,"stamina":87,"finishing":89}'::jsonb where id = 22;
+-- 배서진(A6): 활동량90 , 드리블87 , 수비86 = 피지컬86 = 슛86 >> 패스75
+update members set stats = '{"passing":75,"dribbling":87,"physical":86,"defense":86,"stamina":90,"finishing":86}'::jsonb where id = 12;
+
+-- 구본혁(B1): 슛95 >> 드리블84 , 패스83 , 피지컬80 , 수비79 > 활동량75
+update members set stats = '{"passing":83,"dribbling":84,"physical":80,"defense":79,"stamina":75,"finishing":95}'::jsonb where id = 13;
+-- 차무진(B2): 패스86 , 드리블85 , 슛83 , 피지컬82 , 수비80 , 활동량79
+update members set stats = '{"passing":86,"dribbling":85,"physical":82,"defense":80,"stamina":79,"finishing":83}'::jsonb where id = 10;
+-- 곽동하(B3): 패스90 , 드리블87 , 수비84 > 슛80 , 피지컬78 > 활동량73
+update members set stats = '{"passing":90,"dribbling":87,"physical":78,"defense":84,"stamina":73,"finishing":80}'::jsonb where id = 15;
+-- 임하준(B4): 슛88 , 드리블86 , 패스83 , 피지컬81 , 수비79 > 활동량74
+update members set stats = '{"passing":83,"dribbling":86,"physical":81,"defense":79,"stamina":74,"finishing":88}'::jsonb where id = 9;
+-- 석태민(B5): 패스91 , 수비88 >> 드리블78 , 슛77 , 활동량76 = 피지컬76
+update members set stats = '{"passing":91,"dribbling":78,"physical":76,"defense":88,"stamina":76,"finishing":77}'::jsonb where id = 16;
+-- 류태오(B6): 패스84 , 수비83 , 피지컬82 , 드리블81 , 활동량80 > 슛74
+update members set stats = '{"passing":84,"dribbling":81,"physical":82,"defense":83,"stamina":80,"finishing":74}'::jsonb where id = 17;
+
+-- 변재원(C1): 패스93 >> 드리블81 , 수비79 > 활동량73 = 슛73 , 피지컬72
+update members set stats = '{"passing":93,"dribbling":81,"physical":72,"defense":79,"stamina":73,"finishing":73}'::jsonb where id = 20;
+-- 육상현(C2): 활동량80 = 슛80 , 피지컬78 , 패스77 = 드리블77 , 수비76
+update members set stats = '{"passing":77,"dribbling":77,"physical":78,"defense":76,"stamina":80,"finishing":80}'::jsonb where id = 19;
+-- 전승현(C3): 슛82 , 활동량79 , 수비77 = 드리블77 , 패스76 = 피지컬76
+update members set stats = '{"passing":76,"dribbling":77,"physical":76,"defense":77,"stamina":79,"finishing":82}'::jsonb where id = 18;
+-- 노지환(C4): 패스84 , 드리블81 , 피지컬78 , 수비77 > 슛72 , 활동량70
+update members set stats = '{"passing":84,"dribbling":81,"physical":78,"defense":77,"stamina":70,"finishing":72}'::jsonb where id = 23;
+-- 표지성(C5): 패스83 , 드리블81 , 피지컬78 , 수비76 , 활동량74 > 슛69
+update members set stats = '{"passing":83,"dribbling":81,"physical":78,"defense":76,"stamina":74,"finishing":69}'::jsonb where id = 21;
+-- 하윤석(C6): 활동량80 , 수비77 = 피지컬77 , 패스75 = 드리블75 , 슛72
+update members set stats = '{"passing":75,"dribbling":75,"physical":77,"defense":77,"stamina":80,"finishing":72}'::jsonb where id = 24;
+
+-- 엄재희(D1): 패스79 , 드리블77 , 피지컬75 , 수비73 , 활동량71 , 슛69
+update members set stats = '{"passing":79,"dribbling":77,"physical":75,"defense":73,"stamina":71,"finishing":69}'::jsonb where id = 25;
+-- 피성준(D2): 패스80 , 드리블78 , 피지컬75 , 수비73 , 활동량71 > 슛66
+update members set stats = '{"passing":80,"dribbling":78,"physical":75,"defense":73,"stamina":71,"finishing":66}'::jsonb where id = 26;
+
+-- =============================================================
 -- 관리자 등록 방법 (이 SQL을 실행한 뒤, 별도로 진행하세요)
 -- =============================================================
 -- 1. Supabase 대시보드 > Authentication > Users > Add user 에서

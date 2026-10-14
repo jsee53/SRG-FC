@@ -20,10 +20,12 @@ export const DISTORTED_TIER_STYLE = {
 // 이름순 정렬은 등급(순위) 기준이 아니라 그냥 명단이라서, 사람마다 다른 등급색 대신
 // 동호회 유니폼 색(핑크 몸판 + 차콜 로고)으로 카드를 통일해서 "우리 팀 명단" 느낌을 줌.
 // 등급 배지는 색은 통일하되 글자는 긴 이름 대신 원래 알파벳(S/A/B/C/D)만 남김
+// 카드 틴트(glow)가 유니폼 어깨/소매의 옅은 보조색(#F2DCE8)을 쓰고 있어서 메인 몸판 색보다
+// 연하게 보였음 — 배지와 같은 메인 핑크(#EAC0D8)로 통일해서 실제 유니폼 색에 더 가깝게 함
 export const UNIFORM_STYLE = {
   badge: 'bg-[#EAC0D8] text-[#1A161C]',
   ring: 'ring-[#EAC0D8]/75',
-  glow: 'from-[#F2DCE8]/55',
+  glow: 'from-[#EAC0D8]/85',
   accent: '#EAC0D8',
 }
 
