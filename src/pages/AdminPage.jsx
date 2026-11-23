@@ -15,6 +15,8 @@ export default function AdminPage({
   members,
   equalMode,
   onToggleEqualMode,
+  maintenanceMode,
+  onToggleMaintenanceMode,
   teamPins,
   onChangeTeamPin,
   onClearTeamPins,
@@ -26,6 +28,7 @@ export default function AdminPage({
   const sheetRef = useRef(null)
   const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
   const [togglingEqualMode, setTogglingEqualMode] = useState(false)
+  const [togglingMaintenanceMode, setTogglingMaintenanceMode] = useState(false)
   const [clearingPins, setClearingPins] = useState(false)
   const {
     accounts,
@@ -43,6 +46,12 @@ export default function AdminPage({
     setTogglingEqualMode(true)
     await onToggleEqualMode()
     setTogglingEqualMode(false)
+  }
+
+  async function handleToggleMaintenanceMode() {
+    setTogglingMaintenanceMode(true)
+    await onToggleMaintenanceMode()
+    setTogglingMaintenanceMode(false)
   }
 
   async function handleClearTeamPins() {
@@ -107,6 +116,32 @@ export default function AdminPage({
                 <span
                   className="absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-[var(--color-sheet)] transition-transform"
                   style={{ transform: equalMode ? 'translateX(20px)' : 'translateX(0)' }}
+                />
+              </button>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-[var(--color-surface-soft)] p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold">점검 모드</p>
+                <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                  켜면 관리자 본인을 제외한 모두에게 "점검 중" 화면이 대신 보여요. 앱을 수정하는 동안 켜두고,
+                  끝나면 다시 꺼주세요.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleMaintenanceMode}
+                disabled={togglingMaintenanceMode}
+                aria-pressed={maintenanceMode}
+                className={`relative h-7 w-12 flex-none overflow-hidden rounded-full transition-colors disabled:opacity-40 ${
+                  maintenanceMode ? 'bg-accent-400' : 'bg-[var(--color-surface-soft-hover)]'
+                }`}
+              >
+                <span
+                  className="absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-[var(--color-sheet)] transition-transform"
+                  style={{ transform: maintenanceMode ? 'translateX(20px)' : 'translateX(0)' }}
                 />
               </button>
             </div>

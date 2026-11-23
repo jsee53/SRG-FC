@@ -1396,6 +1396,48 @@ update members set stats = '{"passing":79,"dribbling":77,"physical":75,"defense"
 update members set stats = '{"passing":80,"dribbling":78,"physical":75,"defense":73,"stamina":71,"finishing":66}'::jsonb where id = 26;
 
 -- =============================================================
+-- Phase 19: Phase 14가 깨뜨린 게시판 로딩 버그 수정
+--
+-- 원인: Postgres는 "컬럼 단위 SELECT 권한"만으로는 count(*) 같은 집계 쿼리를 허용하지 않고
+-- 테이블 전체 SELECT 권한을 요구함. Phase 14에서 comments 테이블을 컬럼 단위 권한으로 바꾼
+-- 탓에, 게시글 목록에서 댓글 수를 세는 comments(count) 조회가 전부 403(permission denied
+-- for table comments)으로 실패해서 게시판 자체가 안 열렸음.
+--
+-- 해결: author_email을 comments 컬럼에서 아예 빼서 별도 관리자 전용 테이블로 옮기고,
+-- comments 테이블은 다시 테이블 전체 SELECT 권한으로 되돌림(더 이상 민감한 컬럼이 없으므로
+-- count(*) 집계도 다시 정상 동작). posts는 집계 쿼리 대상이 아니라서 원래도 문제없었고
+-- 그대로 둠(author_email은 여전히 컬럼 단위로 막혀 있음)
+-- =============================================================
+create table if not exists comment_author_emails (
+  comment_id bigint primary key references comments (id) on delete cascade,
+  author_email text not null
+);
+alter table comment_author_emails enable row level security;
+
+insert into comment_author_emails (comment_id, author_email)
+select id, author_email from comments where author_email is not null
+on conflict (comment_id) do nothing;
+
+alter table comments drop column if exists author_email;
+
+-- count(*) 집계가 다시 되려면 컬럼 단위가 아니라 테이블 전체 SELECT 권한이어야 함
+grant select on comments to anon, authenticated;
+
+create policy "only admins can view comment author emails"
+  on comment_author_emails for select
+  using (exists (select 1 from admin_users where user_id = auth.uid()));
+create policy "comment authors can record their own email"
+  on comment_author_emails for insert
+  with check (exists (select 1 from comments where id = comment_id and author_id = auth.uid()));
+
+-- =============================================================
+-- Phase 20: 점검 모드 (관리자 도구에서 토글 — 켜면 관리자 본인 제외 전원에게 점검 화면이 보임)
+-- equal_mode와 같은 app_settings 패턴 재사용, 새 테이블/RLS 불필요
+-- =============================================================
+insert into app_settings (key, value) values ('maintenance_mode', 'false')
+  on conflict (key) do nothing;
+
+-- =============================================================
 -- 관리자 등록 방법 (이 SQL을 실행한 뒤, 별도로 진행하세요)
 -- =============================================================
 -- 1. Supabase 대시보드 > Authentication > Users > Add user 에서

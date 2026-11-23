@@ -6,6 +6,7 @@ import SchedulePage from './pages/SchedulePage'
 import ProfilePage from './pages/ProfilePage'
 import AdminPage from './pages/AdminPage'
 import AuthForm, { PENDING_CLAIM_KEY } from './components/AuthForm'
+import MaintenancePage from './components/MaintenancePage'
 import { useMembers } from './hooks/useMembers'
 import { useAuth } from './hooks/useAuth'
 import { useEvents } from './hooks/useEvents'
@@ -61,6 +62,7 @@ function App() {
   const { settings: appSettings, setSetting: setAppSetting, refetch: refetchSettings } = useAppSettings()
   const equalMode = appSettings.equal_mode === true
   const teamPins = appSettings.team_pins ?? {}
+  const maintenanceMode = appSettings.maintenance_mode === true
 
   const [refreshing, setRefreshing] = useState(false)
 
@@ -90,6 +92,10 @@ function App() {
 
   async function toggleEqualMode() {
     await setAppSetting('equal_mode', !equalMode)
+  }
+
+  async function toggleMaintenanceMode() {
+    await setAppSetting('maintenance_mode', !maintenanceMode)
   }
 
   // 팀 짜기 탭은 관리자뿐 아니라 누구나 쓸 수 있어서, 관리자가 미리 정해둔 고정 배정이
@@ -263,37 +269,41 @@ function App() {
         )}
       </header>
 
-      <nav className="flex flex-none border-b border-[var(--color-border)] px-4 pt-2">
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setPage(tab.key)}
-            className={`flex-1 border-b-2 pb-2 text-sm font-semibold transition-colors ${
-              page === tab.key
-                ? 'border-accent-400 text-[var(--color-text)]'
-                : 'border-transparent text-[var(--color-text-faint)] hover:text-[var(--color-text-soft)]'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
+      {maintenanceMode && !isAdmin ? (
+        <MaintenancePage />
+      ) : (
+        <>
+          <nav className="flex flex-none border-b border-[var(--color-border)] px-4 pt-2">
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setPage(tab.key)}
+                className={`flex-1 border-b-2 pb-2 text-sm font-semibold transition-colors ${
+                  page === tab.key
+                    ? 'border-accent-400 text-[var(--color-text)]'
+                    : 'border-transparent text-[var(--color-text-faint)] hover:text-[var(--color-text-soft)]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
 
-      {showLoader && <p className="px-4 py-16 text-center text-[var(--color-text-muted)]">불러오는 중...</p>}
-      {showError && (
-        <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
-          <p className="text-red-400">멤버 정보를 불러오지 못했어요.</p>
-          <button
-            type="button"
-            onClick={handleManualRefresh}
-            disabled={refreshing}
-            className="rounded-full bg-accent-400 px-4 py-2 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
-          >
-            {refreshing ? '다시 시도 중...' : '다시 시도'}
-          </button>
-        </div>
-      )}
+          {showLoader && <p className="px-4 py-16 text-center text-[var(--color-text-muted)]">불러오는 중...</p>}
+          {showError && (
+            <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
+              <p className="text-red-400">멤버 정보를 불러오지 못했어요.</p>
+              <button
+                type="button"
+                onClick={handleManualRefresh}
+                disabled={refreshing}
+                className="rounded-full bg-accent-400 px-4 py-2 text-sm font-semibold text-accent-950 transition-colors hover:bg-accent-300 disabled:opacity-40"
+              >
+                {refreshing ? '다시 시도 중...' : '다시 시도'}
+              </button>
+            </div>
+          )}
 
       {/* transform은 조상에 걸리면 하위의 position:fixed 모달들이 뷰포트가 아니라
           이 요소를 기준으로 배치되어버리는 CSS 부작용이 있어서, 슬라이드는 transform이 아니라
@@ -365,6 +375,8 @@ function App() {
           </div>
         </div>
       )}
+        </>
+      )}
 
       {showAuth && (
         <AuthForm members={members} onClose={() => setShowAuth(false)} onSignIn={signIn} onSignUp={signUp} />
@@ -397,6 +409,8 @@ function App() {
           members={members}
           equalMode={equalMode}
           onToggleEqualMode={toggleEqualMode}
+          maintenanceMode={maintenanceMode}
+          onToggleMaintenanceMode={toggleMaintenanceMode}
           teamPins={teamPins}
           onChangeTeamPin={updateTeamPin}
           onClearTeamPins={clearTeamPins}
