@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.local
 .env
-.claude/settings.local.json
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +23,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code 로컬 설정
+.claude/
