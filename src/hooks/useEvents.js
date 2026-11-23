@@ -34,11 +34,9 @@ async function saveLocationIfNew(location) {
   await supabase.from('event_locations').upsert({ name: location }, { onConflict: 'name', ignoreDuplicates: true })
 }
 
-// attendees: [{ name, memberId, tier }] — memberId는 로스터 멤버면 채워지고, 용병 자유 입력이면 null(+ 밸런싱용 tier)
-// 한 일정에 경기가 여러 개 있으면 1경기 때 뛴 사람이 2경기엔 빠지고 새 사람이 들어오는 식으로
-// 경기마다 참석자가 달라질 수 있는데, 예전처럼 참석자 행을 통째로 지우고 새로 만들면 이미 저장된
-// 팀 배정/투표가 cascade로 다 같이 날아가버림. 그래서 그대로 남아있는 사람은 건드리지 않고
-// (같은 사람 판정: 로스터 멤버는 member_id, 용병은 이름) 빠진 사람만 지우고 새로 온 사람만 추가함
+// attendees: [{ name, memberId, tier }] (용병은 memberId null, tier로 밸런싱)
+// 통째로 재생성하면 cascade로 팀 배정/투표가 지워지므로 빠진 사람만 삭제, 새 사람만 추가함
+// 동일인 판정: 멤버는 member_id, 용병은 이름
 async function syncAttendees(eventId, attendees) {
   const { data: existing, error: fetchError } = await supabase
     .from('event_attendees')
@@ -85,17 +83,14 @@ export function useEvents() {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  // 팀 짜기/경기 추가처럼 카드가 펼쳐진 채로 일어나는 동작들도 내부적으로 refetch를 도는데,
-  // 매번 loading을 true로 켰다 끄면 그 사이 목록 전체가 잠깐 사라졌다가 다시 그려지면서
-  // 펼쳐둔 카드의 로컬 state(펼침 여부 등)가 초기화돼버림 — 최초 로딩 때만 loading을 씀
+  // refetch마다 loading을 켜면 목록이 다시 그려져 펼친 카드 state가 초기화됨. 최초 로딩에만 씀
   const hasLoadedOnce = useRef(false)
   const retryCountRef = useRef(0)
 
   const refetch = useCallback(async () => {
     if (!hasLoadedOnce.current) setLoading(true)
     setError(null)
-    // 끝난 시간이 지난 경기는 관리자가 안 눌러도 자동으로 "성사됨" 처리되게끔, 목록을 불러올
-    // 때마다 서버에 체크를 요청함(실패해도 목록 조회 자체엔 영향 없게 무시)
+    // 종료 시간이 지난 경기 자동 성사 처리. 실패해도 무시
     await supabase.rpc('auto_confirm_passed_events')
     const { data, error: fetchError } = await supabase
       .from('events')
@@ -118,8 +113,7 @@ export function useEvents() {
     refetch()
   }, [refetch])
 
-  // PWA로 열었을 때 타이밍 문제로 최초 로딩이 실패하는 경우가 있어서, 잠깐 기다렸다가
-  // 몇 번 자동으로 다시 시도함(무한 재시도는 방지) — useMembers.js와 같은 패턴
+  // PWA 진입 시 최초 로딩이 실패하는 경우가 있어 몇 번 재시도함 (useMembers와 동일)
   useEffect(() => {
     if (!error || retryCountRef.current >= 3) return
     retryCountRef.current += 1
@@ -185,8 +179,7 @@ export function useEvents() {
     return { error: rpcError }
   }, [refetch])
 
-  // 아직 경기가 하나도 없는 이벤트에서 "팀 짜기"를 처음 누르면 1경기를 여기로 만들고,
-  // 이미 경기가 있으면 "+ 경기추가"로 다음 번호의 경기를 만듦
+  // 경기가 없으면 1경기, 있으면 다음 번호 경기 생성
   const addMatch = useCallback(async (eventId) => {
     const { data, error: rpcError } = await supabase.rpc('add_event_match', { target_event_id: eventId })
     if (!rpcError) {
@@ -195,7 +188,7 @@ export function useEvents() {
     return { matchId: data, error: rpcError }
   }, [refetch])
 
-  // 관리자가 팀 배정 한 명만 다른 팀으로 수동으로 옮길 때 씀 (전체를 다시 짜지 않고 한 명만 이동)
+  // 한 명만 다른 팀으로 수동 이동
   const moveAttendeeTeam = useCallback(async (matchId, attendeeId, teamIndex) => {
     const { error } = await supabase
       .from('match_team_assignments')
@@ -208,7 +201,7 @@ export function useEvents() {
     return { error }
   }, [refetch])
 
-  // assignments: [{ attendeeId, teamIndex }] — attendeeId는 이미 등록된 event_attendees 행이어야 함
+  // assignments: [{ attendeeId, teamIndex }], attendeeId는 기존 event_attendees 행
   const saveMatchTeams = useCallback(async (matchId, assignments) => {
     const { error: deleteError } = await supabase.from('match_team_assignments').delete().eq('match_id', matchId)
     if (deleteError) return { error: deleteError }
@@ -224,10 +217,8 @@ export function useEvents() {
     return { error: null }
   }, [refetch])
 
-  // participants: [{ attendeeId?, name, memberId?, tier?, teamIndex }] — attendeeId가 없으면
-  // (이 경기에 처음 참여하는 사람이면) event_attendees에 먼저 등록해서 새 id를 받아온 뒤 배정에 씀.
-  // 경기마다 참석자 구성이 달라질 수 있게(1경기 뛴 사람이 2경기엔 빠지고 새 사람이 들어오는 식)
-  // 팀 짜기 화면에서 그때그때 참석자를 고를 수 있도록 지원하는 저장 함수
+  // participants: [{ attendeeId?, name, memberId?, tier?, teamIndex }]
+  // attendeeId가 없으면 event_attendees에 먼저 등록하고 받은 id로 배정 (경기별로 참석자가 다를 수 있음)
   const saveMatchParticipants = useCallback(async (eventId, matchId, participants) => {
     const toInsert = participants.filter((p) => p.attendeeId == null)
     let insertedRows = []
@@ -259,8 +250,7 @@ export function useEvents() {
     return { error: rpcError }
   }, [refetch])
 
-  // 경기 자체를 삭제 (팀 초기화와 달리 경기 탭 자체가 없어짐) — cascade로 팀 배정/투표도 같이 삭제되고,
-  // 남은 경기 번호는 RPC 안에서 순서대로 다시 매겨짐(예: 2경기 삭제하면 3경기가 2경기로)
+  // 팀 배정/투표는 cascade로 삭제되고 남은 경기 번호는 RPC에서 다시 매김
   const deleteMatch = useCallback(async (matchId) => {
     const { error: rpcError } = await supabase.rpc('delete_event_match', { target_match_id: matchId })
     if (!rpcError) {

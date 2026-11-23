@@ -3,15 +3,13 @@ import { useRef } from 'react'
 const CLOSE_THRESHOLD_PX = 80
 const SNAP_BACK_MS = 200
 
-// 아래로 당기는 동안 손가락을 그대로 따라가도록 실시간으로 translateY를 적용하고,
-// 손을 뗐을 때 CLOSE_THRESHOLD_PX 이상 당겼으면 닫힘 확정, 아니면 원위치로 튕겨 돌아옴
+// 드래그 중 translateY를 따라가고, CLOSE_THRESHOLD_PX 이상 당기면 닫힘, 아니면 원위치
 export function useSwipeToClose(sheetRef, requestClose) {
   const touchStart = useRef(null)
   const dragging = useRef(false)
 
   function handleTouchStart(e) {
-    // 모달 안의 스와이프는 모달 자신의 동작이라, 뒤에 있는 페이지 좌우 스와이프 전환으로
-    // 새어나가면 안 됨 (모달 열려있는데 뒤 탭이 같이 넘어가버리는 문제 방지)
+    // 모달 스와이프가 뒤 페이지의 탭 전환 스와이프로 전파되지 않게 함
     e.stopPropagation()
     const t = e.touches[0]
     touchStart.current = { x: t.clientX, y: t.clientY, scrollTop: sheetRef.current?.scrollTop ?? 0 }
@@ -32,8 +30,7 @@ export function useSwipeToClose(sheetRef, requestClose) {
     }
   }
 
-  // 제스처가 touchend 없이 touchcancel로 끝나버리면(카카오톡 인앱 브라우저 등에서
-  // 종종 일어남) 드래그 중 걸어놓은 translateY가 안 지워진 채 남을 수 있어서, 여기서도 정리함
+  // 카카오톡 인앱 브라우저 등에서 touchend 없이 touchcancel로 끝나는 경우가 있어 여기서도 정리
   function handleTouchCancel(e) {
     e.stopPropagation()
     touchStart.current = null
@@ -56,8 +53,7 @@ export function useSwipeToClose(sheetRef, requestClose) {
     if (!wasDragging || !sheetRef.current) return
 
     if (dy > CLOSE_THRESHOLD_PX) {
-      // 지금 당긴 위치에서 그대로 이어서 CSS 닫힘 애니메이션이 시작되도록,
-      // 인라인 스타일을 지우는 것과 requestClose 호출을 같은 틱에서 처리해 튐 없이 이어지게 함
+      // 인라인 스타일 제거와 requestClose를 같은 틱에 해야 현재 위치에서 튐 없이 닫힘 애니메이션이 이어짐
       sheetRef.current.style.transition = ''
       sheetRef.current.style.transform = ''
       requestClose()

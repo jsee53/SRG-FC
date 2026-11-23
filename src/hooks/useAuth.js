@@ -84,8 +84,7 @@ export function useAuth() {
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) return { session: null, error }
 
-    // 이미 가입된(확인 완료) 이메일로 다시 가입하면 supabase가 열거 공격 방지를 위해
-    // 에러 없이 "가짜" 유저를 돌려주는데, identities가 빈 배열인 것으로만 구분 가능함
+    // 이미 가입된 이메일이면 에러 없이 identities가 빈 가짜 유저를 반환함 (열거 공격 방지)
     if (data.user && data.user.identities?.length === 0) {
       return { session: null, error: { message: 'duplicate_email' } }
     }

@@ -10,8 +10,7 @@ export default function BoardPage({ members, session, isAdmin, canPostNotice, on
   const [selectedPost, setSelectedPost] = useState(null)
   const [editingPost, setEditingPost] = useState(null)
 
-  // 좋아요/수정 후 posts가 새로 로드되면 열려있는 상세보기도 최신 값으로 갱신.
-  // 삭제됐다면(더 이상 목록에 없으면) 상세보기를 닫음
+  // posts 재로드 시 열린 상세보기 갱신, 목록에서 사라졌으면 닫음
   useEffect(() => {
     if (!selectedPost) return
     const updated = posts.find((p) => p.id === selectedPost.id)

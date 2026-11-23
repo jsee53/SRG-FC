@@ -1,5 +1,4 @@
-// 로스터에 이름을 연결 안 한 계정은 이메일 대신 계정 id 앞부분으로만 구분함(이메일은
-// DB에서도 조회가 막혀 있어서 더 이상 여기로 넘어오지 않음)
+// 로스터 미연결 계정은 계정 id 앞부분으로 표시 (이메일은 조회 불가)
 export function resolveAuthorName(members, authorId) {
   const linked = members.find((m) => m.userId === authorId)
   if (linked) return linked.name

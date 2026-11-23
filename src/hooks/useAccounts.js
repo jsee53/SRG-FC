@@ -13,8 +13,7 @@ function mapRow(row) {
   }
 }
 
-// 관리자 전용: 가입된 계정 목록 + 연결된 멤버 이름 + 일정 등록 권한 여부.
-// admin_list_accounts RPC가 호출자 관리자 여부를 직접 검사하므로 여기서 따로 막을 필요 없음
+// 관리자 전용. 권한 검사는 admin_list_accounts RPC에서 함
 export function useAccounts() {
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)

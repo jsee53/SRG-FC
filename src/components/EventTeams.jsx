@@ -10,8 +10,7 @@ function groupByTeam(assignments) {
   return [...groups.entries()].sort(([a], [b]) => a - b)
 }
 
-// 팀 짜기 결과 화면(TeamResultCard)과 같은 기준(실력순)으로 보이게 함 — 안 그러면 팀을
-// 수동으로 옮겼을 때 그 사람이 저장 순서상 맨 끝에 붙어 보여서 뒤죽박죽으로 보임
+// 팀 짜기 결과 화면과 같은 실력순 정렬. 수동 이동한 인원이 맨 끝에 붙지 않게 함
 function resolvePowerScore(attendee, members) {
   if (!attendee) return 0
   if (attendee.memberId == null) return powerScore({ isMercenary: true, tier: attendee.tier ?? 'C' })
@@ -31,7 +30,7 @@ export default function EventTeams({ event, match, members, myMemberId, voterId,
 
   const teamIndexes = teamGroups.map(([teamIndex]) => teamIndex)
 
-  // 관리자가 전체를 다시 안 짜고 한 명만 다른 팀으로 바로 옮길 때 씀
+  // 한 명만 다른 팀으로 이동
   async function handleMove(attendeeId, newTeamIndex) {
     setMovingId(attendeeId)
     await onMoveAttendee(match.id, attendeeId, newTeamIndex)
@@ -42,7 +41,7 @@ export default function EventTeams({ event, match, members, myMemberId, voterId,
   const myAssignment = myAttendee ? match.assignments.find((a) => a.attendeeId === myAttendee.id) : null
   const canVote = event.confirmed && myAssignment != null
 
-  // 이미 투표한 사람을 다시 누르면 투표 취소(= 아무도 안 줌), 자기 자신에게는 투표 못 함
+  // 이미 투표한 사람을 다시 누르면 취소, 본인에게는 투표 불가
   async function handleVote(attendeeId, isMyVote) {
     setPendingId(attendeeId)
     setVoteError('')

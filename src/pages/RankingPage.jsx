@@ -29,8 +29,7 @@ export default function RankingPage({
   const [editingStatsMember, setEditingStatsMember] = useState(null)
   const [showAddMember, setShowAddMember] = useState(false)
 
-  // 관리자가 다른 곳에서 수정하고 members가 새로 로드되면, 열려있는 상세보기도 최신 값으로 갱신.
-  // 삭제됐다면(더 이상 목록에 없으면) 상세보기를 닫음
+  // members 재로드 시 열린 상세보기 갱신, 목록에서 사라졌으면 닫음
   useEffect(() => {
     if (!selectedMember) return
     const updated = members.find((m) => m.id === selectedMember.id)

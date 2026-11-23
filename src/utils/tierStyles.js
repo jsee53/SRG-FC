@@ -6,9 +6,8 @@ export const TIER_STYLES = {
   D: { badge: 'bg-gradient-to-r from-cyan-300 via-white to-cyan-400 text-cyan-950', ring: 'ring-cyan-400/60', glow: 'from-cyan-500/30', accent: '#22d3ee' },
 }
 
-// 평등 모드일 때 S급 외 멤버에게 실제 등급 대신 보여주는 가상의 등급(실 데이터는 안 바꿈).
-// 기존 5개 등급 색과 안 헷갈리게 무채색 계열로 따로 두되, S급(금색)보다 튀면 안 되니까
-// 따뜻한 금색 대신 차가운 실버/플래티넘 샤인 톤으로 가라앉힘
+// 평등 모드에서 S급 외 멤버에게 보여주는 가상 등급 (실 데이터는 그대로)
+// 기존 등급색과 구분되고 S급 금색보다 튀지 않게 차가운 실버 톤
 export const DISTORTED_TIER_LABEL = 'DISTORTED'
 export const DISTORTED_TIER_STYLE = {
   badge: 'bg-gradient-to-r from-slate-300 via-white to-slate-400 text-slate-900',
@@ -17,11 +16,8 @@ export const DISTORTED_TIER_STYLE = {
   accent: '#cbd5e1',
 }
 
-// 이름순 정렬은 등급(순위) 기준이 아니라 그냥 명단이라서, 사람마다 다른 등급색 대신
-// 동호회 유니폼 색(핑크 몸판 + 차콜 로고)으로 카드를 통일해서 "우리 팀 명단" 느낌을 줌.
-// 등급 배지는 색은 통일하되 글자는 긴 이름 대신 원래 알파벳(S/A/B/C/D)만 남김
-// 카드 틴트(glow)가 유니폼 어깨/소매의 옅은 보조색(#F2DCE8)을 쓰고 있어서 메인 몸판 색보다
-// 연하게 보였음 — 배지와 같은 메인 핑크(#EAC0D8)로 통일해서 실제 유니폼 색에 더 가깝게 함
+// 이름순은 명단이라 등급색 대신 유니폼 메인 핑크(#EAC0D8)로 통일
+// 배지는 색만 통일하고 글자는 알파벳(S/A/B/C/D)
 export const UNIFORM_STYLE = {
   badge: 'bg-[#EAC0D8] text-[#1A161C]',
   ring: 'ring-[#EAC0D8]/75',

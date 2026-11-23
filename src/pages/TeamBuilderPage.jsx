@@ -8,8 +8,7 @@ import TeamResultSkeleton from '../components/TeamResultSkeleton'
 
 const GENERATE_DELAY_MS = 500
 
-// 팀 고정 배정(pins)은 관리자 도구에서만 설정 가능 — 여긴 누구나 쓸 수 있는 탭이라
-// 그 설정을 그대로 받아서 "팀 나누기" 계산에만 반영함(편집 UI는 없음)
+// 팀 고정 배정은 관리자 도구에서만 편집, 여기선 계산에만 반영
 export default function TeamBuilderPage({ members, equalMode, pins }) {
   const [attendingIds, setAttendingIds] = useState(new Set())
   const [mercenaries, setMercenaries] = useState([])

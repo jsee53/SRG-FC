@@ -6,9 +6,8 @@ import { useSwipeToClose } from '../hooks/useSwipeToClose'
 
 export const PENDING_CLAIM_KEY = 'srgfc_pending_claim'
 
-// Supabase 프로젝트 기본(무료) 이메일 발송 한도는 시간당 몇 통 수준으로 아주 낮아서,
-// 짧은 시간에 여러 명이 가입하면 확인 메일 발송이 막혀 가입 자체가 실패한 것처럼 보임.
-// 원인을 바로 알 수 있게 이 경우만 따로 안내함 (해결책: SMTP 커스텀 설정 또는 이메일 확인 끄기)
+// Supabase 기본 이메일 발송 한도가 낮아 초과 시 가입 실패처럼 보여서 따로 안내함
+// (SMTP 커스텀 설정 또는 이메일 확인 끄기로 해결)
 function describeSignUpError(signUpError) {
   if (signUpError.message === 'duplicate_email') {
     return '이미 가입된 이메일이에요. 로그인해주세요.'

@@ -5,9 +5,8 @@ import { TIER_NAMES } from '../utils/tier'
 import { ROLE_LABELS, ROLE_STYLES, ACE_LABEL, ACE_STYLE } from '../utils/roles'
 import Avatar from './Avatar'
 
-// brandMode: 이름순 정렬일 때만 켜짐 — 순위가 아니라 명단이라서, 등급색 대신 동호회
-// 유니폼 색으로 카드를 통일함(평등 모드로 가려진 멤버도 색은 똑같이 핑크로 맞추되,
-// 등급이 뭔지는 여전히 안 보여줘야 하니 뱃지 글자는 DISTORTED로 그대로 둠)
+// brandMode: 이름순 정렬용. 등급색 대신 유니폼 색으로 통일
+// 평등 모드로 가려진 멤버도 색은 같게, 뱃지 글자는 DISTORTED 유지
 export default function MemberCard({ member, rank, equalMode, brandMode, active, isAce, onClick }) {
   const hideStats = equalMode && member.tier !== 'S'
   const tier = brandMode ? UNIFORM_STYLE : hideStats ? DISTORTED_TIER_STYLE : TIER_STYLES[member.tier] ?? TIER_STYLES.D

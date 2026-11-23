@@ -1,7 +1,7 @@
 import { calcAge } from '../utils/age'
 import Avatar from './Avatar'
 
-// 등급 뱃지(S급=골드)와 같은 샤인 그라데이션 방식을 그대로 재사용: 1위는 골드, 나머지는 실버
+// 등급 뱃지와 같은 샤인 그라데이션. 1위 골드, 나머지 실버
 const GOLD_STYLE = {
   ring: 'ring-amber-400/60',
   glow: 'from-amber-500/30',

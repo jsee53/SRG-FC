@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-// 관리자가 토글하는 사이트 전역 설정(key-value)을 관리. 지금은 equal_mode 하나뿐이지만
-// 나중에 다른 스위치가 추가돼도 테이블/훅 구조를 그대로 재사용할 수 있게 일반화해둠
+// 관리자 전역 설정(key-value). 현재는 equal_mode만 있음
 export function useAppSettings() {
   const [settings, setSettings] = useState({})
   const [loading, setLoading] = useState(true)

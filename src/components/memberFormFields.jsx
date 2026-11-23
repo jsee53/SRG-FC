@@ -1,7 +1,6 @@
 ﻿export const POSITION_OPTIONS = ['GK', 'DF', 'MF', 'FW']
 
-// 16px(text-base) 미만이면 iOS/Android가 이 입력칸에 포커스될 때 화면을 자동으로 확대해버려서
-// (그 뒤로 비율이 깨진 것처럼 보임) 최소 16px을 유지해야 함 — text-sm(14px) 쓰지 말 것
+// 16px 미만이면 모바일에서 포커스 시 자동 확대됨
 export const inputClass =
   'rounded-lg bg-[var(--color-surface-soft)] px-2.5 py-1.5 text-base text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-accent-400'
 
@@ -14,7 +13,7 @@ export function Field({ label, children }) {
   )
 }
 
-// 네이티브 select의 닫힌 상태를 다른 input들과 같은 스타일로 맞추고, 화살표는 앱 톤(slate)으로 직접 그림
+// 네이티브 select를 다른 input과 같은 스타일로 맞추고 화살표는 직접 그림
 export function Select({ className = '', children, ...props }) {
   return (
     <div className="relative">
@@ -36,8 +35,7 @@ export function Select({ className = '', children, ...props }) {
   )
 }
 
-// number/birthYear/positions(+name) — 관리자 수정/추가, 본인 정보 수정에서 공통으로 쓰는 필드.
-// 본인 정보 수정에서는 이름을 못 바꾸게 showName=false로 숨김(다른 멤버로 오인되는 걸 막기 위해)
+// 관리자 수정/추가, 본인 정보 수정 공통 필드. 본인 수정에선 showName=false로 이름 변경 막음
 export function MemberBasicFields({ form, setForm, showName = true }) {
   function togglePosition(pos) {
     setForm((prev) => ({

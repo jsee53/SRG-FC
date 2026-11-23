@@ -39,9 +39,7 @@ export function useComments(postId) {
     refetch()
   }, [refetch])
 
-  // author_email은 comments 테이블이 아니라 별도 관리자 전용 테이블에 저장함(Phase 19) —
-  // 댓글 자체는 성공했는데 이메일 기록만 실패하는 경우가 있어도(드묾) 댓글 작성 자체는
-  // 이미 끝난 뒤라 사용자에게 보이는 동작에는 영향 없음
+  // author_email은 관리자 전용 테이블에 따로 저장. 실패해도 댓글 작성에는 영향 없음
   const createComment = useCallback(async (session, content) => {
     const { data: inserted, error: insertError } = await supabase
       .from('comments')

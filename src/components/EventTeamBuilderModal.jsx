@@ -16,22 +16,16 @@ function toggledSet(prev, key) {
   return next
 }
 
-// 이벤트에 등록된 참석자(event.attendees) 하나를 팀 짜기용 참가자 모양으로 변환.
-// id/attendeeId는 팀 저장에 쓰이는 event_attendees 행의 id로 덮어써야 해서, 관리자 도구의
-// 고정 배정과 매칭할 실제 로스터 멤버 id는 memberId로 따로 보존해둠 (teamBuilder.js의 pinKey 참고).
-// 로스터에서 삭제된 멤버를 가리키는 행이면(member가 안 잡히면) 이름만 남은 용병처럼 취급함
+// event_attendees 행을 팀 짜기 참가자 형태로 변환. id는 attendee id라 고정 배정 매칭용 멤버 id는 memberId로 보존
+// 로스터에서 삭제된 멤버면 용병처럼 취급
 function resolvePoolEntry(a, members) {
   const member = a.memberId != null ? members.find((m) => m.id === a.memberId) : null
   if (member) return { ...member, id: a.id, attendeeId: a.id, memberId: member.id }
   return { id: a.id, attendeeId: a.id, tier: a.tier ?? 'C', isMercenary: true, label: a.name }
 }
 
-// 팀 고정 배정(pins)은 관리자 도구에서만 설정 가능 — 일정 관리 권한자도 여기서 직접
-// 고정시킬 수는 없고, 관리자가 미리 정해둔 전역 설정을 그대로 받아서 반영만 함.
-//
-// 한 일정에 경기가 여러 개 있으면(1경기, 2경기...) 경기마다 실제 참여자가 달라질 수 있어서
-// (1경기 뛴 사람이 2경기엔 빠지고 새 사람이 들어오는 식), 이벤트에 이미 등록된 전체 참석자 풀에서
-// 이번 경기에 참여할 사람만 고르고, 풀에 없는 로스터 멤버/새 용병도 이번 경기용으로 추가할 수 있게 함
+// 팀 고정 배정은 관리자 전역 설정을 반영만 함
+// 경기마다 참여자가 다를 수 있어 이벤트 참석자 풀에서 고르고, 로스터 멤버/용병도 경기별로 추가 가능
 export default function EventTeamBuilderModal({ event, match, members, equalMode, teamPins, onClose, onSave }) {
   useLockBodyScroll()
   const { closing, requestClose } = useDismissAnimation(onClose)
@@ -45,15 +39,14 @@ export default function EventTeamBuilderModal({ event, match, members, equalMode
   const previousAssignedAttendeeIds = new Set((match.assignments ?? []).map((a) => a.attendeeId))
   const isRebuilding = previousAssignedAttendeeIds.size > 0
 
-  // 참여 제외 상태(이벤트 풀 기준) — 이 경기에 이미 저장된 배정이 있으면 그 사람들만 기본 체크,
-  // 없으면(새 경기) 이벤트에 등록된 전체 인원을 기본으로 체크
+  // 저장된 배정이 있으면 그 인원만, 새 경기면 전체 참석자 기본 체크
   const [excludedAttendeeIds, setExcludedAttendeeIds] = useState(() => {
     if (!isRebuilding) return new Set()
     return new Set(poolEntries.filter((e) => !previousAssignedAttendeeIds.has(e.attendeeId)).map((e) => e.attendeeId))
   })
-  // 이벤트 풀에는 없지만 이번 경기에 새로 참여시킬 로스터 멤버(저장 시 event_attendees에 등록됨)
+  // 풀에 없는 로스터 멤버 추가분 (저장 시 event_attendees에 등록)
   const [addedMemberIds, setAddedMemberIds] = useState(new Set())
-  // 이번 경기용으로 새로 추가하는 용병(저장 시 event_attendees에 등록됨)
+  // 이번 경기용 신규 용병 (저장 시 event_attendees에 등록)
   const [newMercenaries, setNewMercenaries] = useState([])
   const mercIdRef = useRef(0)
 

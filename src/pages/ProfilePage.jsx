@@ -24,10 +24,7 @@ export default function ProfilePage({
   const { handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel } = useSwipeToClose(sheetRef, requestClose)
   const [form, setForm] = useState(null)
 
-  // "내 정보"를 열어둔 채로 이름을 연결하면(멤버 없음 → 있음) 이 창이 다시 마운트되는 게 아니라
-  // member prop만 바뀌는데, useState 초깃값은 처음 마운트될 때(아직 null이었을 때) 딱 한 번만
-  // 쓰여서 form이 계속 null로 남아있었음 — 그 상태로 수정 폼이 렌더되면서 MemberBasicFields가
-  // form.number 등을 읽다 그대로 터져서(에러 바운더리가 없어 전체 화면이 하얗게/배경만 남게 됨) 크래시
+  // 열린 상태에서 멤버 연결 시 재마운트 없이 member prop만 바뀌어서 form을 다시 세팅함
   useEffect(() => {
     if (member) {
       setForm({ number: member.number ?? '', birthYear: member.birthYear, positions: member.positions })

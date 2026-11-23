@@ -46,27 +46,23 @@ export default function MemberDetail({
   const sheetRef = useRef(null)
   const [direction, setDirection] = useState('next')
   const [closing, setClosing] = useState(false)
-  // 렌더 중간에 ref를 직접 mutate하면 StrictMode의 이중 렌더 때문에 값이 꼬여서
-  // (React 공식 문서의 "이전 렌더 값 저장하기" 패턴처럼) state로 안전하게 추적함
+  // 렌더 중 ref를 mutate하면 StrictMode 이중 렌더에서 값이 꼬여서 state로 추적
   const [prevMemberId, setPrevMemberId] = useState(null)
   const [isNavigating, setIsNavigating] = useState(false)
 
   useLockBodyScroll(Boolean(member))
 
-  // 이 컴포넌트는 부모가 항상 마운트해두고 member로만 표시를 켜고 끄므로,
-  // 새 멤버가 열릴 때마다 이전 닫기 애니메이션 상태를 초기화해야 함
+  // 항상 마운트된 상태라 새 멤버가 열릴 때 닫기 애니메이션 상태 초기화
   useEffect(() => {
     if (member) setClosing(false)
   }, [member])
 
   if (!member) {
-    // 모달이 닫힌 상태 — 다음 번 열릴 때 "처음 여는 것"으로 인식하도록 초기화
+    // 다음에 열릴 때 처음 여는 것으로 인식하도록 초기화
     if (prevMemberId !== null) setPrevMemberId(null)
     return null
   }
-  // 모달이 처음 열리는 순간(이전 멤버가 없었음)엔 좌우 슬라이드 애니메이션을 주지 않음.
-  // 모달 시트 자체가 아래→위로 올라오는 중인데 내용까지 좌우로 같이 움직이면 어색해 보이기 때문.
-  // 이전/다음으로 넘길 때(멤버 → 다른 멤버)만 좌우 슬라이드를 적용함
+  // 처음 열릴 땐 시트가 올라오는 중이라 좌우 슬라이드 없음, 이전/다음 이동 시에만 적용
   if (member.id !== prevMemberId) {
     setIsNavigating(prevMemberId !== null)
     setPrevMemberId(member.id)
@@ -96,13 +92,10 @@ export default function MemberDetail({
     setTimeout(onClose, 220)
   }
 
-  // 드래그 중 실시간으로 시트를 손가락에 맞춰 움직이는 방식은(inline transform)
-  // 제스처가 touchcancel로 중간에 끊기거나(카카오톡 인앱 브라우저 등에서 흔함) 방향
-  // 오판이 겹치면 정리가 안 된 채로 남아 시트가 치우쳐 보이는 문제가 반복됐음.
-  // 그래서 손을 뗄 때 한 번에만 판정하는 단순한 방식으로 되돌림 — inline style을
-  // 아예 건드리지 않으니 중간에 끊겨도 남는 게 없음
+  // 드래그 중 inline transform을 쓰면 touchcancel(카카오톡 인앱 등)로 끊길 때 시트가 치우친 채 남음
+  // 그래서 손을 뗄 때 한 번만 판정함
   function handleTouchStart(e) {
-    // 뒤에 있는 페이지의 좌우 스와이프 탭 전환으로 이벤트가 새어나가지 않게 막음
+    // 뒤 페이지의 탭 스와이프로 이벤트 전파 방지
     e.stopPropagation()
     const t = e.touches[0]
     touchStart.current = { x: t.clientX, y: t.clientY, scrollTop: sheetRef.current?.scrollTop ?? 0 }
@@ -128,7 +121,7 @@ export default function MemberDetail({
       return
     }
 
-    // 맨 위까지 스크롤된 상태에서 아래로 당기면 닫기 (당겨서 새로고침과 비슷한 제스처)
+    // 맨 위에서 아래로 당기면 닫기
     if (dy > 80 && dy > Math.abs(dx) * 1.5 && startScrollTop <= 0) {
       requestClose()
     }
@@ -201,7 +194,7 @@ export default function MemberDetail({
           <div className="mt-2 flex items-center gap-4">
             <Avatar name={member.name} size="lg" />
             <div>
-              {/* 칭호가 없는 선수도 상세보기 높이가 같도록, 뱃지가 없어도 이 줄의 높이는 항상 고정해둠 */}
+              {/* 칭호 없는 선수도 상세보기 높이가 같도록 줄 높이 고정 */}
               <div className="mb-1 flex h-5 gap-1">
                 {isAce && (
                   <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider ${ACE_STYLE}`}>

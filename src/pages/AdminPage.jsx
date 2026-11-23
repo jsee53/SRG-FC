@@ -7,8 +7,7 @@ import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import { useDismissAnimation } from '../hooks/useDismissAnimation'
 import { useSwipeToClose } from '../hooks/useSwipeToClose'
 
-// 팀 짜기 탭이 보통 2~3팀으로 나누니, 고정 배정도 그 범위만큼만 미리 준비해둠
-// (더 많은 팀으로 나누면 그 이상 팀 번호로 고정된 사람은 자동으로 무시됨)
+// 이 범위를 넘는 팀 번호로 고정된 인원은 팀 나누기에서 무시됨
 const MAX_PIN_TEAM_COUNT = 3
 
 export default function AdminPage({

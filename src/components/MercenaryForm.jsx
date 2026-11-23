@@ -8,8 +8,7 @@ export default function MercenaryForm({ mercenaries, onAdd, onRemove, equalMode 
   const [count, setCount] = useState(1)
   const [tier, setTier] = useState('C')
 
-  // 평등 모드에서는 S급 여부만 실력 배정에 영향을 주니, 나머지 등급을 다 보여줄 필요 없이
-  // "S" / "DISTORTED" 둘 중 하나만 고르게 함
+  // 평등 모드에선 S급 여부만 실력 배정에 영향을 줘서 S / DISTORTED만 선택
   const tierOptions = equalMode ? ['S', DEFAULT_NON_S_TIER] : TIER_ORDER
 
   function tierLabel(t) {

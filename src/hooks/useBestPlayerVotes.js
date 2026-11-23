@@ -12,8 +12,7 @@ function mapRow(row) {
   }
 }
 
-// 전체 투표를 한 번에 들고 있음 (클럽 규모가 작아 이벤트별로 나눠 불러올 필요가 없음) —
-// 개인정보 화면의 "베스트 플레이어 받은 횟수" 집계와 일정 탭의 경기별 투표 UI가 이 데이터를 같이 씀
+// 규모가 작아 전체 투표를 한 번에 불러옴. 개인정보 집계와 일정 탭 투표 UI가 같이 씀
 export function useBestPlayerVotes() {
   const [votes, setVotes] = useState([])
   const [loading, setLoading] = useState(true)

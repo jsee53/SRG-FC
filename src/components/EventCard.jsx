@@ -8,8 +8,7 @@ function formatDate(dateStr) {
   return `${dateStr} (${weekday})`
 }
 
-// 경기가 하나도 없는 이벤트는 "1경기" 탭을 가상으로 보여주고, 실제로 팀을 짜는 순간에야
-// event_matches 행을 만듦(관리자가 일정을 등록만 하고 팀은 안 짤 수도 있어서 미리 만들어두지 않음)
+// 경기가 없으면 "1경기" 탭을 가상으로 보여주고 event_matches 행은 팀을 짤 때 생성
 const VIRTUAL_FIRST_MATCH = { id: null, matchNumber: 1, assignments: [] }
 
 export default function EventCard({

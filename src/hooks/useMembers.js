@@ -22,7 +22,6 @@ export function useMembers() {
   const [error, setError] = useState(null)
   const retryCountRef = useRef(0)
 
-  // useCallback으로 고정된 함수라 아래 useEffect 의존성 배열이 매 렌더마다 바뀌지 않음
   const refetch = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -42,8 +41,7 @@ export function useMembers() {
     refetch()
   }, [refetch])
 
-  // PWA로 열었을 때 세션 복구보다 이 요청이 먼저 나가는 등 타이밍 문제로 최초 로딩이
-  // 실패하는 경우가 있어서, 잠깐 기다렸다가 몇 번 자동으로 다시 시도함(무한 재시도는 방지)
+  // PWA 진입 시 세션 복구 전에 요청이 나가 실패하는 경우가 있어 몇 번 재시도함
   useEffect(() => {
     if (!error || retryCountRef.current >= 3) return
     retryCountRef.current += 1
@@ -104,7 +102,7 @@ export function useMembers() {
     return { error: rpcError }
   }, [refetch])
 
-  // "등급/능력치 수정" 권한만 있는 계정용 — tier/stats만 건드리는 좁은 함수를 통해서만 저장
+  // 등급/능력치 수정 권한 계정용. tier/stats만 저장
   const updateMemberStats = useCallback(async (id, tier, stats) => {
     const { error: rpcError } = await supabase.rpc('update_member_stats', {
       target_id: id,
@@ -126,7 +124,7 @@ export function useMembers() {
     return { error: rpcError }
   }, [refetch])
 
-  // 관리자가 계정-멤버 연결을 끊음 (관리자는 members를 자유롭게 수정할 수 있는 기존 RLS 정책을 그대로 씀)
+  // 계정-멤버 연결 해제 (관리자 RLS 정책 사용)
   const unlinkMember = useCallback(async (id) => {
     const { error: unlinkError } = await supabase
       .from('members')

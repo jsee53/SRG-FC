@@ -76,8 +76,7 @@ function App() {
     setRefreshing(false)
   }
 
-  // PWA는 브라우저 새로고침 제스처가 없어서, 백그라운드에 있다가 다시 열렸을 때(예: 홈 화면에서
-  // 재진입) 그 사이 실패했거나 오래된 데이터를 자동으로 한 번 다시 불러와줌
+  // PWA는 새로고침 제스처가 없어서 재진입 시 실패했거나 오래된 데이터를 다시 불러옴
   useEffect(() => {
     function handleWake() {
       if (document.visibilityState === 'visible') refetchAll()
@@ -98,9 +97,7 @@ function App() {
     await setAppSetting('maintenance_mode', !maintenanceMode)
   }
 
-  // 팀 짜기 탭은 관리자뿐 아니라 누구나 쓸 수 있어서, 관리자가 미리 정해둔 고정 배정이
-  // 누가 "팀 나누기"를 누르든 똑같이 적용되려면 브라우저 로컬 상태가 아니라 서버에 저장해야 함.
-  // app_settings에 새 key만 추가하는 거라 별도 테이블/RLS 없이 기존 구조를 그대로 재사용
+  // 고정 배정은 누가 팀을 나누든 같게 적용돼야 해서 app_settings에 저장
   async function updateTeamPin(key, teamIndex) {
     const next = { ...teamPins }
     if (teamIndex == null) delete next[key]
@@ -124,7 +121,7 @@ function App() {
     return result
   }
 
-  // 성사된 경기의 참석자만 참석 횟수로 집계 (멤버 규모가 작아 그때그때 계산해도 충분히 가벼움)
+  // 성사된 경기의 참석자만 참석 횟수로 집계
   const attendanceCountByMemberId = useMemo(() => {
     const counts = {}
     for (const event of events) {
@@ -137,10 +134,10 @@ function App() {
     return counts
   }, [events])
 
-  // 참석률순 정렬에서 "N회 참석" 옆에 분모로 같이 보여줄 전체 성사된 경기 수
+  // 참석률 표시용 분모(성사된 경기 수)
   const totalConfirmedEvents = useMemo(() => events.filter((e) => e.confirmed).length, [events])
 
-  // 팀별 최다 득표자(동률이면 전부)를 그 팀의 "베스트 플레이어"로 치고, 받은 횟수를 집계
+  // 팀별 최다 득표자를 POM으로 보고 받은 횟수 집계
   const bestPlayerCountByMemberId = useMemo(() => {
     const attendeeById = new Map()
     for (const event of events) {
@@ -155,8 +152,7 @@ function App() {
       tallyByGroup.set(key, tally)
     }
 
-    // 팀별 최다 득표자가 1명이면 그 사람만, 정확히 2명이 공동 최다면 둘 다 POM으로 인정.
-    // 3명 이상이 공동 최다면(득표가 너무 갈려서 확정할 수 없는 경우) 그 팀은 아무도 인정하지 않음
+    // 최다 득표자가 1~2명이면 모두 POM, 3명 이상 동률이면 그 팀은 POM 없음
     const counts = {}
     for (const tally of tallyByGroup.values()) {
       const maxVotes = Math.max(...tally.values())
@@ -172,9 +168,8 @@ function App() {
     return counts
   }, [events, votes])
 
-  // 이메일 확인이 필요한 가입이었다면 로그인 시점에야 세션이 생기므로, 그때 예약된 멤버 연결을 처리.
-  // 그 사이 다른 사람이 같은 이름을 먼저 선택했다면 claim은 실패하는데, 재시도해도 계속 실패할
-  // 뿐이니 예약 키는 성공/실패 여부와 상관없이 지운다 (실패 시엔 "내 정보"에서 다시 선택 가능)
+  // 이메일 확인 가입은 로그인 시점에 세션이 생겨서 여기서 예약된 멤버 연결 처리
+  // claim 실패는 재시도해도 같으므로 결과와 무관하게 예약 키 삭제 (내 정보에서 재선택 가능)
   useEffect(() => {
     if (!session) return
     const pendingId = localStorage.getItem(PENDING_CLAIM_KEY)
@@ -189,10 +184,7 @@ function App() {
   const myMember = session ? members.find((m) => m.userId === session.user.id) : null
   const unclaimedMembers = members.filter((m) => !m.userId)
 
-  // 랭킹/팀 짜기/게시판/일정 탭을 좌우 스와이프로도 넘길 수 있게 함.
-  // 스크롤이 긴 페이지(게시판/일정)에서는 세로로 긴 드래그 중 손이 살짝 옆으로 흔들리기만 해도
-  // 가로 스와이프로 오판(또는 반대로 누락)하기 쉬워서, 이동 초반(10px)에 방향을 먼저 정하고
-  // 그 뒤로는 그 방향을 고정해서 판정함
+  // 탭 좌우 스와이프. 세로 스크롤 중 오판 방지를 위해 초반 10px에서 방향 고정
   const pageTouchStart = useRef(null)
   const pageSwipeAxis = useRef(null)
   const pageIndex = TABS.findIndex((tab) => tab.key === page)
@@ -305,9 +297,7 @@ function App() {
             </div>
           )}
 
-      {/* transform은 조상에 걸리면 하위의 position:fixed 모달들이 뷰포트가 아니라
-          이 요소를 기준으로 배치되어버리는 CSS 부작용이 있어서, 슬라이드는 transform이 아니라
-          left로 애니메이션함 (left는 그런 부작용이 없음) */}
+      {/* 조상에 transform이 있으면 하위 position:fixed 모달이 뷰포트 기준이 아니게 돼서 left로 애니메이션 */}
       {!showLoader && !showError && (
         <div className="flex-1 overflow-hidden">
           <div

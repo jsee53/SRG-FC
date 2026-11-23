@@ -1,7 +1,6 @@
 import { pinKey } from '../utils/teamBuilder'
 
-// 관리자가 특정 인원을 특정 팀에 미리 고정해두는 도구. 여기서 정한 배정은 팀 나누기 알고리즘이
-// 그대로 반영하고, 나머지 인원만 (평등 모드면 S급만 실력 기준/나머지 무작위, 아니면 전체 실력 기준으로) 채움
+// 팀 고정 배정 편집. 고정 인원 외 나머지는 팀 나누기 알고리즘이 채움
 export default function TeamPinEditor({ entries, teamCount, pins, onChangePin, onClearAll, clearing }) {
   if (entries.length === 0) return null
   const hasPins = Object.keys(pins).length > 0

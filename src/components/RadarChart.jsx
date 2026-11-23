@@ -14,8 +14,7 @@ function polygonAt(radius) {
   return AXES.map((_, i) => pointAt(i, radius).join(',')).join(' ')
 }
 
-// locked: 평등 모드에서 S급 외 멤버의 실제 능력치를 가리는 용도. 모양(육각형 격자)은 그대로 두고
-// 데이터 다각형만 안개 낀 느낌의 점선으로, 축 라벨도 숫자 대신 "?"로 바꾸고 중앙에 자물쇠를 둠
+// locked: 평등 모드에서 S급 외 능력치 가림. 데이터는 점선, 라벨은 "?", 중앙에 자물쇠
 export default function RadarChart({ stats, color = '#34d399', locked = false }) {
   const dataPoints = locked
     ? polygonAt(RADIUS * 0.55)

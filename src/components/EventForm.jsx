@@ -53,10 +53,8 @@ export default function EventForm({ members, locations, equalMode, event, onClos
     setExtras((prev) => prev.filter((_, i) => i !== index))
   }
 
-  // 참석자를 체크 해제해서 빼면 그 사람의 event_attendees 행 자체가 지워지는데, 이건 그 사람이
-  // 들어가 있던 모든 경기의 팀 배정까지 cascade로 같이 지워버림. 경기별로 참석자를 다르게 하고
-  // 싶을 땐 여기서 빼지 말고 해당 경기의 "팀 짜기"에서 체크만 해제하면 되므로, 여기서 진짜로
-  // 빼려는(=이미 팀 배정된) 사람이 있으면 저장 전에 확인을 한 번 받음
+  // 참석자를 빼면 event_attendees 행 삭제로 모든 경기의 팀 배정도 cascade 삭제됨
+  // 팀 배정된 사람이 빠지면 저장 전에 확인받음 (경기별 제외는 팀 짜기에서 체크 해제)
   function findRemovedAttendeesWithTeams() {
     const nextExtraNames = new Set(extras.map((ex) => ex.name))
     const removed = (event?.attendees ?? []).filter((a) =>

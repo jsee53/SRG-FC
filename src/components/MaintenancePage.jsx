@@ -1,5 +1,4 @@
-// 관리자가 점검 모드를 켜두면 관리자 본인을 제외한 모두에게 이 화면이 대신 보임.
-// 관리자는 헤더의 로그인/내 정보 버튼으로 로그인하면 바로 평소 화면으로 전환됨
+// 점검 모드에서 관리자 외 사용자에게 표시. 관리자는 로그인하면 평소 화면으로 전환
 export default function MaintenancePage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">

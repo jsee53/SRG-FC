@@ -20,7 +20,7 @@ const NEUTRAL_KEYS = [
   'backdropStrong',
 ]
 
-// camelCase -> kebab-case로 CSS 변수 이름 맞춤 (surfaceSoftHover -> --color-surface-soft-hover)
+// camelCase -> CSS 변수명 (surfaceSoftHover -> --color-surface-soft-hover)
 function toCssVarName(key) {
   return `--color-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`
 }
@@ -37,8 +37,7 @@ function applyTheme(themeKey) {
   }
 }
 
-// 앱 전체 강조색(브랜드 컬러)을 기기별로 저장해서 다음 방문에도 유지함.
-// 등급(S~D) 배지 색상은 이 테마와 무관하게 그대로 고정.
+// 강조색 테마는 기기별로 저장. 등급 배지 색은 테마와 무관하게 고정
 export function useAccentTheme() {
   const [theme, setTheme] = useState(() => localStorage.getItem(STORAGE_KEY) || DEFAULT_ACCENT_THEME)
 

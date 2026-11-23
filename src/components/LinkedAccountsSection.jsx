@@ -1,7 +1,6 @@
 ﻿import { useState } from 'react'
 
-// 이메일은 members 테이블에서 더 이상 공개 조회가 안 되므로(보안 수정으로 컬럼 접근 차단),
-// 관리자 전용 RPC(admin_list_accounts)로 받아온 accounts 목록에서 찾아와 보여줌
+// members의 이메일은 공개 조회 불가라 관리자 전용 RPC(admin_list_accounts) 결과에서 찾음
 export default function LinkedAccountsSection({ members, accounts, onUnlink }) {
   const [pendingId, setPendingId] = useState(null)
 
