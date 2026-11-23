@@ -50,7 +50,7 @@ export default function TeamBuilderPage({ members, equalMode, pins }) {
   function handleGenerate() {
     setIsGenerating(true)
     timeoutRef.current = setTimeout(() => {
-      setTeams(buildBalancedTeams(allAttendees, teamCount, pins))
+      setTeams(buildBalancedTeams(allAttendees, teamCount, pins, equalMode))
       setIsGenerating(false)
     }, GENERATE_DELAY_MS)
   }

@@ -85,9 +85,15 @@ export function pinKey(entry) {
   return String(entry.memberId ?? entry.attendeeId ?? entry.id)
 }
 
-// 평등 모드는 표시만 다르고 팀 나누기 로직은 동일함
+// 남은 자리 수만큼 슬롯을 만들어 섞은 뒤 순서대로 배정
+function assignRandomly(teams, entries) {
+  const slots = shuffle(teams.flatMap((team, index) => Array(team.size - team.members.length).fill(index)))
+  entries.forEach((entry, i) => addToTeam(teams[slots[i]], entry))
+}
+
 // pins: { [pinKey]: teamIndex }. 고정 인원은 먼저 배정해 totalScore에 반영한 뒤 나머지를 밸런싱
-export function buildBalancedTeams(attendees, teamCount, pins = {}) {
+// 평등 모드: S급은 동일하게 균등 배분하고, 나머지는 능력치와 무관하게 무작위 배정
+export function buildBalancedTeams(attendees, teamCount, pins = {}, equalMode = false) {
   const sizes = computeTeamSizes(attendees.length, teamCount)
   const teams = sizes.map((size) => ({
     size,
@@ -120,6 +126,11 @@ export function buildBalancedTeams(attendees, teamCount, pins = {}) {
     const targetIndex = pickLeastLoadedSTeam(teams, sCounts, statExcess(entry))
     addToTeam(teams[targetIndex], entry)
     sCounts[targetIndex] += 1
+  }
+
+  if (equalMode) {
+    assignRandomly(teams, shuffle(restPool))
+    return teams
   }
 
   for (const entry of shuffle(restPool).sort((a, b) => powerScore(b) - powerScore(a))) {

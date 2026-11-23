@@ -114,7 +114,7 @@ export default function EventTeamBuilderModal({ event, match, members, equalMode
     setIsGenerating(true)
     setError('')
     timeoutRef.current = setTimeout(() => {
-      setTeams(buildBalancedTeams(participants, teamCount, teamPins))
+      setTeams(buildBalancedTeams(participants, teamCount, teamPins, equalMode))
       setIsGenerating(false)
     }, GENERATE_DELAY_MS)
   }
